@@ -1,51 +1,76 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 
 export default function CartPage() {
   const [cartItems, setCartItems] = useState<any[]>([]);
 
-  const updateQty = (id: string, newQty: number) => {
-    if (newQty < 1) return;
-    setCartItems((prev) =>
-      prev.map((item) =>
-        item._id === id ? { ...item, quantity: newQty } : item
-      )
-    );
-  };
+  // ✅ Load items from localStorage safely
+ useEffect(() => {
+  if (typeof window !== "undefined") {
+    const stored = JSON.parse(localStorage.getItem("cart") || "[]");
+    const cleaned = stored.map((item: any) => ({
+      ...item,
+      id: item.id || item._id || Math.random().toString(),
+      price: Number(item.price) || 0,
+      quantity: Number(item.quantity) || 1,
+    }));
+    setCartItems(cleaned);
+  }
+}, []);
+const updateQty = (id: string, newQty: number) => {
+  setCartItems((prev) => {
+    let updated;
+    if (newQty < 1) {
+      // Remove item if quantity drops below 1
+      updated = prev.filter((item) => item.id !== id);
+    } else {
+      // Update quantity normally
+      updated = prev.map((item) =>
+        item.id === id ? { ...item, quantity: newQty } : item
+      );
+    }
+    localStorage.setItem("cart", JSON.stringify(updated));
+    return updated;
+  });
+};
 
   const removeItem = (id: string) => {
-    setCartItems((prev) => prev.filter((item) => item._id !== id));
+    setCartItems((prev) => {
+      const updated = prev.filter((item) => item.id !== id);
+      localStorage.setItem("cart", JSON.stringify(updated)); // 🔥 update localStorage
+      return updated;
+    });
   };
 
-  const clearCart = () => setCartItems([]);
+  const clearCart = () => {
+    setCartItems([]);
+    localStorage.removeItem("cart");
+  };
 
-  const subtotal = cartItems.reduce(
-    (total, item) => total + item.price * item.quantity,
-    0
-  );
+ const subtotal = cartItems.reduce((total, item) => {
+  const price = Number(item.price) || 0;
+  const qty = Number(item.quantity) || 1;
+  return total + price * qty;
+}, 0);
+
 
   return (
     <div className="w-full flex justify-center py-10">
       <div className="max-w-7xl w-full px-4">
         <h1 className="text-3xl font-bold mb-6">Cart</h1>
 
-        {/* GRID LAYOUT ALWAYS */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-
-          {/* LEFT SIDE — CART ITEMS */}
           <div className="lg:col-span-2 flex flex-col gap-6">
-
             {cartItems.length === 0 ? (
               <p className="text-gray-500 text-lg">Your cart is empty.</p>
             ) : (
               cartItems.map((item) => (
                 <div
-                  key={item._id}
+                 key={item._id || item.product_name || Math.random()}
                   className="flex items-center justify-between bg-gray-100 p-4 rounded-xl"
                 >
-                  {/* IMAGE */}
                   <Image
                     src={item.imageUrl || "/placeholder.png"}
                     alt="product"
@@ -54,20 +79,17 @@ export default function CartPage() {
                     className="rounded-lg"
                   />
 
-                  {/* DETAILS */}
                   <div className="flex-1 ml-5">
-                    <h2 className="font-semibold text-lg">{item.product_name}</h2>
+                    <h2 className="font-semibold text-lg">
+                      {item.product_name}
+                    </h2>
 
-                    <p className="text-sm text-gray-500">
-                      Brand: {item.brand}
-                    </p>
+                    <p className="text-sm text-gray-500">Brand: {item.brand}</p>
 
                     <p className="font-semibold mt-1">${item.price}</p>
 
-                    {/* Quantity */}
                     <div className="flex items-center gap-3 mt-3">
-                      <button
-                        onClick={() => updateQty(item._id, item.quantity - 1)}
+                      <button onClick={() => updateQty(item.id, item.quantity - 1)}
                         className="w-8 h-8 flex items-center justify-center bg-gray-300 rounded-lg"
                       >
                         −
@@ -76,7 +98,7 @@ export default function CartPage() {
                       <span className="font-semibold">{item.quantity}</span>
 
                       <button
-                        onClick={() => updateQty(item._id, item.quantity + 1)}
+                        onClick={() => updateQty(item.id, item.quantity + 1)}
                         className="w-8 h-8 flex items-center justify-center bg-gray-300 rounded-lg"
                       >
                         +
@@ -84,7 +106,7 @@ export default function CartPage() {
                     </div>
 
                     <button
-                      onClick={() => removeItem(item._id)}
+                      onClick={() => removeItem(item.id)}
                       className="text-red-600 text-sm mt-3"
                     >
                       Remove
@@ -99,15 +121,12 @@ export default function CartPage() {
             )}
           </div>
 
-          {/* RIGHT — ORDER SUMMARY BOX ALWAYS */}
           <div className="border rounded-xl p-6 bg-white shadow-sm h-fit sticky top-10">
             <h2 className="text-xl font-bold mb-5">Order Summary</h2>
 
             <div className="flex justify-between mb-3">
               <span>Subtotal</span>
-              <span className="font-semibold">
-                ${subtotal.toFixed(2)}
-              </span>
+              <span className="font-semibold">${subtotal.toFixed(2)}</span>
             </div>
 
             <div className="flex justify-between mb-3">
@@ -123,14 +142,10 @@ export default function CartPage() {
             <div className="flex justify-between text-lg font-bold border-t pt-4 mt-4">
               <span>Total</span>
               <span>
-                $
-                {(
-                  subtotal + (cartItems.length === 0 ? 0 : 12.99)
-                ).toFixed(2)}
+                ${(subtotal + (cartItems.length === 0 ? 0 : 12.99)).toFixed(2)}
               </span>
             </div>
 
-            {/* CHECKOUT BUTTON */}
             <button
               disabled={cartItems.length === 0}
               className={`w-full py-3 rounded-lg mt-5 
@@ -143,7 +158,6 @@ export default function CartPage() {
               Checkout
             </button>
 
-            {/* Clear cart only if items exist */}
             {cartItems.length > 0 && (
               <button
                 onClick={clearCart}

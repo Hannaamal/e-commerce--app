@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function NewArrival() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-10">
@@ -21,9 +23,11 @@ export default function NewArrival() {
             <p className="text-sm w-60">
               Black and White version of the PS5 coming out on sale.
             </p>
+            <Link href="/products">
             <button className="mt-3 bg-white text-black px-4 py-1 rounded">
               Shop Now
             </button>
+            </Link>
           </div>
         </div>
 
@@ -41,9 +45,11 @@ export default function NewArrival() {
               <p className="text-sm w-56">
                 Featured woman collections that give you another vibe.
               </p>
+              <Link href="/products">
               <button className="mt-3 bg-white text-black px-4 py-1 rounded">
                 Shop Now
               </button>
+              </Link>
             </div>
           </div>
 
@@ -59,9 +65,11 @@ export default function NewArrival() {
               <div className="absolute bottom-4 left-4 text-white">
                 <h3 className="text-lg font-semibold">Furnitures</h3>
                 <p className="text-sm">Simple and Elegent Furniture</p>
+                <Link href="/products">
                 <button className="mt-2 bg-white text-black px-4 py-1 rounded">
                   Shop Now
                 </button>
+                </Link>
               </div>
             </div>
 
@@ -74,9 +82,11 @@ export default function NewArrival() {
               <div className="absolute bottom-4 left-4 text-white">
                 <h3 className="text-lg font-semibold">Perfume</h3>
                 <p className="text-sm">GUCCI INTENSE-OUD EDP</p>
+                <Link href="/products">
                 <button className="mt-2 bg-white text-black px-4 py-1 rounded">
                   Shop Now
                 </button>
+                </Link>
               </div>
             </div>
 
