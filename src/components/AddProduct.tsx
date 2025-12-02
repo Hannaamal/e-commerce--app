@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -13,9 +13,19 @@ import {
   DialogActions,
 } from "@mui/material";
 import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch } from "@/redux/store";
+import {
+  listProducts,
+  addProduct,
+  editProduct,
+  deleteProduct,
+} from "@/redux/productsSlice";
 
+// Fix Type (MongoDB IDs are strings)
 type Product = {
-  id: number;
+  id: string;
+  _id?: string;
   name: string;
   category: string;
   price: number;
@@ -23,53 +33,78 @@ type Product = {
 };
 
 export default function AddProduct() {
-  const [products, setProducts] = useState<Product[]>([]);
+  const dispatch = useDispatch<AppDispatch>();
+  const { products } = useSelector((state: any) => state.products);
+
+  // Convert MongoDB _id → id for DataGrid
+  const rows = products.map((item: any) => ({
+    id: item._id,
+    ...item,
+  }));
+
   const [productName, setProductName] = useState("");
   const [category, setCategory] = useState("");
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("");
 
-  // Edit dialog state
+  useEffect(() => {
+    dispatch(listProducts());
+  }, [dispatch]);
+
+  // Edit Dialog States
   const [editOpen, setEditOpen] = useState(false);
-  const [editProduct, setEditProduct] = useState<Product | null>(null);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
+  // Add Product
   const handleAddProduct = () => {
-    if (!productName || !category || !price || !stock) return;
+    dispatch(
+      addProduct({
+        name: productName,
+        category,
+        price: Number(price),
+        stock: Number(stock),
+      })
+    );
 
-    const newProduct: Product = {
-      id: products.length + 1,
-      name: productName,
-      category,
-      price: Number(price),
-      stock: Number(stock),
-    };
-
-    setProducts([...products, newProduct]);
     setProductName("");
     setCategory("");
     setPrice("");
     setStock("");
   };
 
-  const handleDelete = (id: number) => {
-    setProducts(products.filter((p) => p.id !== id));
+  // Delete Product
+  const handleDelete = (id: string) => {
+    dispatch(deleteProduct(id));
   };
 
+  // Open Edit Dialog
   const handleEditOpen = (product: Product) => {
-    setEditProduct(product);
+    setEditingProduct(product);
     setEditOpen(true);
   };
 
+  // Save Edited Product
   const handleEditSave = () => {
-    if (!editProduct) return;
-    setProducts(
-      products.map((p) => (p.id === editProduct.id ? editProduct : p))
+    if (!editingProduct) return;
+
+    dispatch(
+      editProduct({
+        id: editingProduct.id,
+        productData: {
+          name: editingProduct.name,
+          category: editingProduct.category,
+          price: editingProduct.price,
+          stock: editingProduct.stock,
+        },
+      })
     );
+
     setEditOpen(false);
   };
 
+  // Table Columns
   const columns: GridColDef[] = [
-    { field: "id", headerName: "ID", width: 70 },
+    { field: "id", headerName: "ID", width: 200 },
     { field: "name", headerName: "Name", width: 200 },
     { field: "category", headerName: "Category", width: 150 },
     { field: "price", headerName: "Price", width: 100 },
@@ -78,9 +113,8 @@ export default function AddProduct() {
       field: "actions",
       headerName: "Actions",
       width: 180,
-      sortable: false,
       renderCell: (params: GridRenderCellParams<Product>) => (
-        <Box sx={{ display: "flex", gap: 1, pt: 1 }}>
+        <Box sx={{ display: "flex", gap: 1 }}>
           <Button
             variant="outlined"
             size="small"
@@ -109,118 +143,95 @@ export default function AddProduct() {
 
       {/* Add Product Form */}
       <Box
-        component="form"
         sx={{ display: "flex", flexWrap: "wrap", gap: 2, mb: 4 }}
       >
         <TextField
-          sx={{ flex: "1 1 45%" }}
           label="Product Name"
           value={productName}
           onChange={(e) => setProductName(e.target.value)}
         />
         <TextField
-          sx={{ flex: "1 1 45%" }}
           label="Category"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
         />
         <TextField
-          sx={{ flex: "1 1 45%" }}
           type="number"
           label="Price"
           value={price}
           onChange={(e) => setPrice(e.target.value)}
         />
         <TextField
-          sx={{ flex: "1 1 45%" }}
           type="number"
           label="Stock"
           value={stock}
           onChange={(e) => setStock(e.target.value)}
         />
-        <Box sx={{ width: "100%" }}>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleAddProduct}
-          >
-            Add Product
-          </Button>
-        </Box>
+        <Button variant="contained" onClick={handleAddProduct}>
+          Add Product
+        </Button>
       </Box>
 
       {/* Products Table */}
-      <Box sx={{ height: 400, width: "100%" }}>
-        <DataGrid
-          rows={products}
-          columns={columns}
-          pagination
-          pageSizeOptions={[5]}
-          initialState={{
-            pagination: { paginationModel: { pageSize: 5, page: 0 } },
-          }}
-        />
+      <Box sx={{ height: 400 }}>
+        <DataGrid rows={rows} columns={columns} pageSizeOptions={[5]} />
       </Box>
 
       {/* Edit Product Dialog */}
       <Dialog open={editOpen} onClose={() => setEditOpen(false)}>
         <DialogTitle>Edit Product</DialogTitle>
-        <DialogContent
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            width: 500,
-            height: 300,
-            gap: 4,
-            mt: 5,
-          }}
-        >
+        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
           <TextField
-            fullWidth
             label="Product Name"
-            value={editProduct?.name || ""}
+            value={editingProduct?.name || ""}
             onChange={(e) =>
-              setEditProduct(
-                editProduct ? { ...editProduct, name: e.target.value } : null
-              )
-            }
-          />
-          <TextField
-            label="Category"
-            value={editProduct?.category || ""}
-            onChange={(e) =>
-              setEditProduct(
-                editProduct
-                  ? { ...editProduct, category: e.target.value }
+              setEditingProduct(
+                editingProduct
+                  ? { ...editingProduct, name: e.target.value }
                   : null
               )
             }
           />
+
+          <TextField
+            label="Category"
+            value={editingProduct?.category || ""}
+            onChange={(e) =>
+              setEditingProduct(
+                editingProduct
+                  ? { ...editingProduct, category: e.target.value }
+                  : null
+              )
+            }
+          />
+
           <TextField
             label="Price"
             type="number"
-            value={editProduct?.price || ""}
+            value={editingProduct?.price || ""}
             onChange={(e) =>
-              setEditProduct(
-                editProduct
-                  ? { ...editProduct, price: Number(e.target.value) }
+              setEditingProduct(
+                editingProduct
+                  ? { ...editingProduct, price: Number(e.target.value) }
                   : null
               )
             }
           />
+
           <TextField
             label="Stock"
             type="number"
-            value={editProduct?.stock || ""}
+            value={editingProduct?.stock || ""}
             onChange={(e) =>
-              setEditProduct(
-                editProduct
-                  ? { ...editProduct, stock: Number(e.target.value) }
+              setEditingProduct(
+                editingProduct
+                  ? { ...editingProduct, stock: Number(e.target.value) }
                   : null
               )
             }
           />
         </DialogContent>
+
         <DialogActions>
           <Button onClick={() => setEditOpen(false)}>Cancel</Button>
           <Button onClick={handleEditSave} variant="contained">
