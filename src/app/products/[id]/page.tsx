@@ -40,7 +40,7 @@ export default function ViewProductPage() {
   const [isWishlisted, setIsWishlisted] = useState(false);
 
   // -----------------------------------------
-  //  Fetch product from Redux on page load
+  // 🚀 Fetch product from Redux on page load
   // -----------------------------------------
   useEffect(() => {
     if (id) {
@@ -61,7 +61,7 @@ export default function ViewProductPage() {
   }, [product]);
 
  
-  //  Wishlist Toggle (no changes)
+  // ❤️ Wishlist Toggle (no changes)
  
   const handleWishlist = () => {
     let wishlist = JSON.parse(localStorage.getItem("wishlist") || "[]");
@@ -77,7 +77,7 @@ export default function ViewProductPage() {
   };
 
  
-  //  Add to Cart (no changes)
+  // 🛒 Add to Cart (no changes)
  
   const handleAddToCart = () => {
     let cart = JSON.parse(localStorage.getItem("cart") || "[]");

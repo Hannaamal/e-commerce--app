@@ -38,10 +38,18 @@ export default function AdminNavbar() {
   const closeMenu = () => {
     setMenuAnchor(null);
   };
+  const handleLogout = async () => {
+  // Clear HTTP cookies by overwriting them with empty values
+  document.cookie = "auth_token=; path=/; max-age=0;";
+  document.cookie = "role=; path=/; max-age=0;";
+
+  // Redirect to home or login page
+  window.location.href = "/";
+};
 
   const navItems = [
     { label: "Dashboard", icon: <DashboardIcon />, path: "/admin" },
-    { label: "Products", icon: <ShoppingBagIcon />, path: "/admin/products" },
+    { label: "Products", icon: <ShoppingBagIcon />, path: "/admin/product" },
     { label: "Reports", icon: <BarChartIcon />, path: "/admin/reports" },
     { label: "Users", icon: <GroupIcon />, path: "/admin/users" },
   ];
@@ -100,9 +108,14 @@ export default function AdminNavbar() {
           <MenuItem onClick={closeMenu}>Profile</MenuItem>
           <MenuItem onClick={closeMenu}>Settings </MenuItem>
           <Divider />
-          <MenuItem onClick={closeMenu}>
-            <LogoutIcon fontSize="small" sx={{ mr: 1 }} /> Logout
-          </MenuItem>
+         <MenuItem
+  onClick={() => {
+    closeMenu();
+    handleLogout();
+  }}
+>
+  <LogoutIcon fontSize="small" sx={{ mr: 1 }} /> Logout
+</MenuItem>
         </Menu>
 
         <Divider sx={{ my: 2 }} />

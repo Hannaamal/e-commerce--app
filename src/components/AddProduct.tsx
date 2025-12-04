@@ -20,16 +20,18 @@ import {
   addProduct,
   editProduct,
   deleteProduct,
-} from "@/redux/productsSlice";
+} from "@/redux/adminSlice";
 
 // Fix Type (MongoDB IDs are strings)
 type Product = {
   id: string;
-  _id?: string;
-  name: string;
+  product_name: string;
+  discription: string;
+  brand: string;
   category: string;
   price: number;
   stock: number;
+  is_deleted: boolean;
 };
 
 export default function AddProduct() {
@@ -46,6 +48,9 @@ export default function AddProduct() {
   const [category, setCategory] = useState("");
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("");
+  const [description, setDescription] = useState("");
+  const [brand, setBrand] = useState("");
+  const [image, setImage] = useState<File | null>(null);
 
   useEffect(() => {
     dispatch(listProducts());
@@ -56,21 +61,30 @@ export default function AddProduct() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   // Add Product
-  const handleAddProduct = () => {
-    dispatch(
-      addProduct({
-        name: productName,
-        category,
-        price: Number(price),
-        stock: Number(stock),
-      })
-    );
+ const handleAddProduct = () => {
+  const formData = new FormData();
+  formData.append("product_name", productName);
+  formData.append("category", category);
+  formData.append("price", price);
+  formData.append("stock", stock);
+  formData.append("description", description);
+  formData.append("brand", brand);
 
-    setProductName("");
-    setCategory("");
-    setPrice("");
-    setStock("");
-  };
+  if (image) {
+    formData.append("image", image);
+  }
+
+  dispatch(addProduct(formData));
+
+  setProductName("");
+  setCategory("");
+  setPrice("");
+  setStock("");
+  setDescription("");
+  setBrand("");
+  setImage(null);
+};
+
 
   // Delete Product
   const handleDelete = (id: string) => {
@@ -91,7 +105,7 @@ export default function AddProduct() {
       editProduct({
         id: editingProduct.id,
         productData: {
-          name: editingProduct.name,
+          product_name: editingProduct.product_name,
           category: editingProduct.category,
           price: editingProduct.price,
           stock: editingProduct.stock,
@@ -105,7 +119,7 @@ export default function AddProduct() {
   // Table Columns
   const columns: GridColDef[] = [
     { field: "id", headerName: "ID", width: 200 },
-    { field: "name", headerName: "Name", width: 200 },
+    { field: "product_name", headerName: "Name", width: 200 },
     { field: "category", headerName: "Category", width: 150 },
     { field: "price", headerName: "Price", width: 100 },
     { field: "stock", headerName: "Stock", width: 100 },
@@ -142,9 +156,7 @@ export default function AddProduct() {
       </Typography>
 
       {/* Add Product Form */}
-      <Box
-        sx={{ display: "flex", flexWrap: "wrap", gap: 2, mb: 4 }}
-      >
+      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, mb: 4 }}>
         <TextField
           label="Product Name"
           value={productName}
@@ -167,6 +179,17 @@ export default function AddProduct() {
           value={stock}
           onChange={(e) => setStock(e.target.value)}
         />
+        <TextField
+          label="Description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
+        <TextField
+          label="Brand"
+          value={brand}
+          onChange={(e) => setBrand(e.target.value)}
+        />
+        <input type="file" onChange={(e) => setImage(e.target.files ? e.target.files[0] : null)} />
         <Button variant="contained" onClick={handleAddProduct}>
           Add Product
         </Button>
@@ -180,14 +203,16 @@ export default function AddProduct() {
       {/* Edit Product Dialog */}
       <Dialog open={editOpen} onClose={() => setEditOpen(false)}>
         <DialogTitle>Edit Product</DialogTitle>
-        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        <DialogContent
+          sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+        >
           <TextField
             label="Product Name"
-            value={editingProduct?.name || ""}
+            value={editingProduct?.product_name || ""}
             onChange={(e) =>
               setEditingProduct(
                 editingProduct
-                  ? { ...editingProduct, name: e.target.value }
+                  ? { ...editingProduct, product_name: e.target.value }
                   : null
               )
             }

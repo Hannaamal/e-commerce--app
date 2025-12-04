@@ -1,51 +1,62 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { IconButton, Menu, MenuItem, Avatar } from "@mui/material";
 import { useRouter } from "next/navigation";
+import { useSelector, useDispatch } from "react-redux";
+import { AppDispatch, RootState } from "@/redux/store";
+import { logoutUser } from "@/redux/authSlice";
+import Cookies from "js-cookie";
 
 export default function NavbarProfileDropdown() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [avatarLetter, setAvatarLetter] = useState("S");
   const open = Boolean(anchorEl);
   const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
 
-  // Example user data (replace with your auth state)
-  const user = {
-    name: "John Doe",
-    email: "john@example.com",
-    avatar: "https://i.pravatar.cc/150?img=3",
-    loggedIn: true, // or false
-  };
+  const { user, token } = useSelector((state: RootState) => state.auth);
+  const loggedIn = !!token || !!Cookies.get("token");
+
+  useEffect(() => {
+    if (loggedIn && user?.name) {
+      setAvatarLetter(user.name.charAt(0).toUpperCase());
+    } else {
+      setAvatarLetter("S");
+    }
+  }, [user, loggedIn]);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
 
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
+
+  
+
+  const handleClose = () => setAnchorEl(null);
 
   const goToProfile = () => {
     handleClose();
-    router.push("/profile"); // your profile page route
+    router.push("/profile");
   };
 
   const goToSignup = () => {
     handleClose();
-    router.push("/signup"); // signup page route
+    router.push("/signup");
   };
 
-  const handleLogout = () => {
-    handleClose();
-    // Add your logout logic here
-    console.log("User logged out");
-    router.push("/"); // redirect after logout
-  };
+ const handleLogout = async () => {
+  Cookies.remove("token");
+  Cookies.remove("auth_token");
+  Cookies.remove("role");
+  await dispatch(logoutUser());
+  router.push("/");
+};
 
   return (
     <>
       <IconButton onClick={handleClick} size="large">
-        <Avatar src={user.avatar} alt={user.name} />
+        <Avatar>{loggedIn ? avatarLetter : "S"}</Avatar>
       </IconButton>
 
       <Menu
@@ -61,7 +72,7 @@ export default function NavbarProfileDropdown() {
           horizontal: "right",
         }}
       >
-        {user.loggedIn ? (
+        {loggedIn ? (
           <>
             <MenuItem onClick={goToProfile}>Profile</MenuItem>
             <MenuItem onClick={handleLogout}>Logout</MenuItem>

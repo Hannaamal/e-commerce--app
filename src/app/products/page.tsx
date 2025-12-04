@@ -60,7 +60,7 @@ const paginatedProducts = filteredProducts.slice(start, end);
         </Typography>
       ) : (
         <Box sx={{ display: "flex", flexWrap: "wrap", gap: 5, justifyContent: "center" }}>
-          {filteredProducts.map((product) => (
+          {paginatedProducts.map((product) => (
             <Box key={product._id} sx={{ width: 300 }}>
               <Link href={`/products/${product._id}`} style={{ textDecoration: "none" }}>
                 <Card className="shadow-lg rounded-xl" sx={{ height: 350 }}>
@@ -77,7 +77,7 @@ const paginatedProducts = filteredProducts.slice(start, end);
                     }}
                   />
                   <CardContent>
-                    <Typography variant="h6">{product.name}</Typography>
+                    <Typography variant="h6">{product.product_name}</Typography>
                     <Typography color="textSecondary">${product.price}</Typography>
                   </CardContent>
                 </Card>

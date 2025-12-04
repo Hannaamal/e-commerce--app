@@ -1,64 +1,85 @@
 "use client";
 
-import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
-import { TextField, Button, Typography, Box } from "@mui/material";
+import { useState, ChangeEvent, FormEvent } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useDispatch } from "react-redux";
+import { loginUser } from "@/redux/authSlice";
+import { AppDispatch } from "@/redux/store";
 
-type FormData = {
+import {
+  TextField,
+  Button,
+  Card,
+  CardContent,
+  Typography,
+  Box,
+} from "@mui/material";
+
+interface LoginForm {
   email: string;
   password: string;
-};
+}
 
-// Validation schema
-const schema = yup.object().shape({
-  email: yup.string().email("Invalid email").required("Email is required"),
-  password: yup.string().min(6, "Password must be at least 6 characters").required("Password is required"),
-});
+export default function Login() {
+  const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter();
 
-export default function LoginForm() {
-  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
-    resolver: yupResolver(schema),
-  });
+  const [form, setForm] = useState<LoginForm>({ email: "", password: "" });
 
-  const onSubmit = (data: FormData) => {
-    console.log("Login data:", data);
-    // Call your login API here
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+
+    try {
+      const result = await dispatch(loginUser(form)).unwrap();
+
+      alert("Login successful!");
+
+      if (result.role === "admin") {
+        router.push("/admin");
+      } else {
+        router.push("/");
+      }
+    } catch (error: any) {
+      alert(error || "Login failed");
+    }
   };
 
   return (
-    <Box className="flex justify-center items-center min-h-screen bg-gray-50">
-      <Box className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <Typography variant="h4" className="mb-6 text-center font-bold">Sign In</Typography>
-
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-          <TextField
-            label="Email"
-            type="email"
-            {...register("email")}
-            error={!!errors.email}
-            helperText={errors.email?.message}
-            fullWidth
-          />
-
-          <TextField
-            label="Password"
-            type="password"
-            {...register("password")}
-            error={!!errors.password}
-            helperText={errors.password?.message}
-            fullWidth
-          />
-
-          <Button type="submit" variant="contained" color="primary" className="mt-4">
-            Sign In
-          </Button>
-
-          <Typography variant="body2" className="text-center text-gray-500 mt-2">
-            Don’t have an account? <a href="/signup" className="text-blue-500">Sign Up</a>
+    <div className="flex items-center justify-center min-h-screen bg-gray-100 px-4">
+      <Card className="w-full max-w-md shadow-xl rounded-2xl">
+        <CardContent>
+          <Typography
+            variant="h4"
+            className="text-center font-bold mb-6"
+            color="primary"
+          >
+            Welcome Back 👋
           </Typography>
-        </form>
-      </Box>
-    </Box>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <TextField fullWidth label="Email" name="email" onChange={handleChange} />
+            <TextField fullWidth label="Password" name="password" type="password" onChange={handleChange} />
+
+            <Button type="submit" variant="contained" fullWidth size="large">
+              Login
+            </Button>
+          </form>
+
+          <Box className="text-center mt-4">
+            <Typography variant="body2">
+              Don’t have an account?{" "}
+              <Link href="/signup" className="text-blue-600 font-semibold">
+                Register
+              </Link>
+            </Typography>
+          </Box>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

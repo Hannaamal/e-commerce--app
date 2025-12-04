@@ -1,34 +1,121 @@
 "use client";
 
-import { TextField, Button, Typography, Box } from "@mui/material";
+import { useState, ChangeEvent, FormEvent } from "react";
+import axios from "@/lib/api";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-export default function SignupPage() {
+import {
+  TextField,
+  Button,
+  Card,
+  CardContent,
+  Typography,
+  Box,
+} from "@mui/material";
+
+interface RegisterForm {
+  name: string;
+  email: string;
+  password: string;
+  phone: string;
+}
+
+export default function Signup() {
+  const router = useRouter();
+
+  const [form, setForm] = useState<RegisterForm>({
+    name: "",
+    email: "",
+    password: "",
+    phone: "",
+  });
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    try {
+      await axios.post("/api/auth/register", form);
+
+      alert("Registration successful!");
+      router.push("/");
+    } catch (error: any) {
+      alert(error?.response?.data?.message || "Registration failed");
+    }
+  };
+
   return (
-    <Box className="flex justify-center items-center min-h-screen bg-gray-100">
-      <Box className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <Typography variant="h4" className="mb-6 text-center font-bold">
-          Create Account
-        </Typography>
-
-        <form className="flex flex-col gap-4">
-          <TextField label="Full Name" fullWidth />
-          <TextField label="Email" fullWidth />
-          <TextField label="Password" type="password" fullWidth />
-          <TextField label="Confirm Password" type="password" fullWidth />
-
-          <Button variant="contained" color="primary" fullWidth>
-            Sign Up
-          </Button>
-
-          <Typography className="text-center text-gray-600 mt-4">
-            Already have an account?{" "}
-            <Link href="/login" className="text-blue-500 underline">
-              Sign in
-            </Link>
+    <div className="flex items-center justify-center min-h-screen bg-gray-100 px-4">
+      <Card className="w-full max-w-md shadow-xl rounded-2xl">
+        <CardContent>
+          <Typography
+            variant="h4"
+            className="text-center font-bold mb-6"
+            color="primary"
+          >
+            Create Account ✨
           </Typography>
-        </form>
-      </Box>
-    </Box>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <TextField
+              fullWidth
+              label="Full Name"
+              name="name"
+              variant="outlined"
+              onChange={handleChange}
+            />
+
+            <TextField
+              fullWidth
+              label="Email"
+              name="email"
+              variant="outlined"
+              onChange={handleChange}
+            />
+
+            <TextField
+              fullWidth
+              label="Password"
+              name="password"
+              type="password"
+              variant="outlined"
+              onChange={handleChange}
+            />
+
+            <TextField
+              fullWidth
+              label="Phone"
+              name="phone"
+              type="number"
+              variant="outlined"
+              onChange={handleChange}
+            />
+
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              fullWidth
+              size="large"
+              className="mt-2 py-3 rounded-lg"
+            >
+              Register
+            </Button>
+          </form>
+
+          <Box className="text-center mt-4">
+            <Typography variant="body2">
+              Already have an account?{" "}
+              <Link href="/login" className="text-blue-600 font-semibold">
+                Login
+              </Link>
+            </Typography>
+          </Box>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
