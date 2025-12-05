@@ -31,6 +31,7 @@ type Product = {
   category: string;
   price: number;
   stock: number;
+ image?: string | File | null;  // <-- IMPORTANT
   is_deleted: boolean;
 };
 
@@ -61,34 +62,33 @@ export default function AddProduct() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   // Add Product
- const handleAddProduct = () => {
-  const formData = new FormData();
-  formData.append("product_name", productName);
-  formData.append("category", category);
-  formData.append("price", price);
-  formData.append("stock", stock);
-  formData.append("description", description);
-  formData.append("brand", brand);
+  const handleAddProduct = () => {
+    const formData = new FormData();
+    formData.append("product_name", productName);
+    formData.append("category", category);
+    formData.append("price", price);
+    formData.append("stock", stock);
+    formData.append("description", description);
+    formData.append("brand", brand);
 
-  if (image) {
-    formData.append("image", image);
-  }
+    if (image) {
+      formData.append("image", image);
+    }
 
-  dispatch(addProduct(formData));
+    dispatch(addProduct(formData));
 
-  setProductName("");
-  setCategory("");
-  setPrice("");
-  setStock("");
-  setDescription("");
-  setBrand("");
-  setImage(null);
-};
-
+    setProductName("");
+    setCategory("");
+    setPrice("");
+    setStock("");
+    setDescription("");
+    setBrand("");
+    setImage(null);
+  };
 
   // Delete Product
-  const handleDelete = (id: string) => {
-    dispatch(deleteProduct(id));
+  const handleDelete = (_id: string) => {
+    dispatch(deleteProduct(_id));
   };
 
   // Open Edit Dialog
@@ -98,23 +98,26 @@ export default function AddProduct() {
   };
 
   // Save Edited Product
-  const handleEditSave = () => {
-    if (!editingProduct) return;
+ const handleEditSave = () => {
+  if (!editingProduct) return;
 
-    dispatch(
-      editProduct({
-        id: editingProduct.id,
-        productData: {
-          product_name: editingProduct.product_name,
-          category: editingProduct.category,
-          price: editingProduct.price,
-          stock: editingProduct.stock,
-        },
-      })
-    );
+  const formData = new FormData();
+  formData.append("product_name", editingProduct.product_name);
+  formData.append("description", editingProduct.discription);
+  formData.append("price", editingProduct.price.toString());
+  formData.append("stock", editingProduct.stock.toString());
+  formData.append("brand", editingProduct.brand);
+  formData.append("category", editingProduct.category);
 
-    setEditOpen(false);
-  };
+  // If a new image was selected:
+  if (editingProduct.image instanceof File) {
+    formData.append("image", editingProduct.image);
+  }
+
+  dispatch(editProduct({ id: editingProduct.id, productData: formData }));
+  setEditOpen(false);
+};
+
 
   // Table Columns
   const columns: GridColDef[] = [
@@ -150,13 +153,13 @@ export default function AddProduct() {
   ];
 
   return (
-    <Container maxWidth="md" sx={{ mt: 5 }}>
+    <Container maxWidth="xl" sx={{ mt: 5 ,width: '800px',height: '600px'}}>
       <Typography variant="h4" gutterBottom>
         Add Product
       </Typography>
 
       {/* Add Product Form */}
-      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, mb: 4 }}>
+      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, mb: 10 }}>
         <TextField
           label="Product Name"
           value={productName}
@@ -189,14 +192,17 @@ export default function AddProduct() {
           value={brand}
           onChange={(e) => setBrand(e.target.value)}
         />
-        <input type="file" onChange={(e) => setImage(e.target.files ? e.target.files[0] : null)} />
+        <input
+          type="file"
+          onChange={(e) => setImage(e.target.files ? e.target.files[0] : null)}
+        />
         <Button variant="contained" onClick={handleAddProduct}>
           Add Product
         </Button>
       </Box>
 
       {/* Products Table */}
-      <Box sx={{ height: 400 }}>
+      <Box sx={{ height: 700, width: 700 }}>
         <DataGrid rows={rows} columns={columns} pageSizeOptions={[5]} />
       </Box>
 
@@ -251,6 +257,29 @@ export default function AddProduct() {
               setEditingProduct(
                 editingProduct
                   ? { ...editingProduct, stock: Number(e.target.value) }
+                  : null
+              )
+            }
+          />
+          <TextField
+            label="Description"
+            value={editingProduct?.discription || ""}
+            onChange={(e) =>
+              setEditingProduct(
+                editingProduct
+                  ? { ...editingProduct, discription: e.target.value }
+                  : null
+              )
+            }
+          />
+
+          <TextField
+            label="Brand"
+            value={editingProduct?.brand || ""}
+            onChange={(e) =>
+              setEditingProduct(
+                editingProduct
+                  ? { ...editingProduct, brand: e.target.value }
                   : null
               )
             }

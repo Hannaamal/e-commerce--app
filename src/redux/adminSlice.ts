@@ -44,23 +44,37 @@ export const getProduct = createAsyncThunk('products/get', async (id: string) =>
 export const addProduct = createAsyncThunk(
   "products/add",
   async (formData: FormData) => {
+    const token = Cookies.get("auth_token");  // your JWT from cookie / localStorage
     const role = Cookies.get("role");
-    const res = await api.post("/api/products", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
+
+    const res = await api.post("/api/product", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+        "Authorization": `Bearer ${token}`,   // <-- ADD THIS
+      },
       withCredentials: true,
     });
+
     return res.data;
   }
 );
-
 
 
 //  Edit product
 export const editProduct = createAsyncThunk(
   'products/edit',
   async ({ id, productData }: { id: string; productData: any }) => {
+    const token = Cookies.get("auth_token");  // your JWT from cookie / localStorage
+    const role = Cookies.get("role");
   
-    const res = await api.put(`/api/product/${id}`, productData);
+    const res = await api.put(`/api/product/${id}`, productData,{
+        headers: {
+        "Authorization": `Bearer ${token}`,   // <-- ADD THIS
+         "Content-Type": "multipart/form-data",
+    },
+    withCredentials: true,
+    });
+
     return res.data;
   }
 );
@@ -68,7 +82,7 @@ export const editProduct = createAsyncThunk(
 //  Delete product
 export const deleteProduct = createAsyncThunk('products/delete', async (id: string) => {
 
-  await api.delete(`/api/product/restore/${id}`);
+  await api.put(`/api/product/restore/${id}`);
   return id;
 });
 

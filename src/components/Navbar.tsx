@@ -7,11 +7,16 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Cookies from "js-cookie";
 import NavbarProfileDropdown from "./NavbarProfileDropdown";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/redux/store";
+import { fetchCartItems } from "@/redux/cartSlice";
 
 export default function Navbar() {
   const [cartCount, setCartCount] = useState(0);
   const [wishlistCount, setWishlistCount] = useState(0);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+ const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
     const token = Cookies.get("auth_token"); // check if token exists
@@ -24,6 +29,10 @@ export default function Navbar() {
       setWishlistCount(wishlist.length);
     }
   }, []);
+
+  const handleCartOpen = async () => {
+    await dispatch(fetchCartItems()); // 🔥 Call API here
+  };
 
   return (
     <AppBar
@@ -58,19 +67,18 @@ export default function Navbar() {
 
               {/* Cart Icon */}
               <Link href="/cart">
-                <IconButton color="inherit">
-                  <Badge
-                    badgeContent={
-                      <span className="relative flex h-6 w-6 items-center justify-center">
+                <IconButton color="inherit" onClick={handleCartOpen}>
+                  <div className="relative">
+                    {cartCount > 0 && (
+                      <span className="absolute -top-1 -right-1 flex h-6 w-6">
                         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sky-400 opacity-50"></span>
-                        <span className="relative inline-flex items-center justify-center h-6 w-6 rounded-full bg-sky-500 text-white font-bold">
+                        <span className="relative inline-flex items-center justify-center h-6 w-6 rounded-full bg-sky-500 text-white text-xs font-bold">
                           {cartCount}
                         </span>
                       </span>
-                    }
-                  >
+                    )}
                     <ShoppingCartIcon />
-                  </Badge>
+                  </div>
                 </IconButton>
               </Link>
             </>

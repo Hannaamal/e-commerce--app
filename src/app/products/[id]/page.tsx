@@ -5,6 +5,8 @@ import { useParams, useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
 import { getProduct } from "@/redux/productsSlice";
+import { addToCart } from "@/redux/cartSlice";
+
 
 import {
   Dialog,
@@ -54,8 +56,8 @@ export default function ViewProductPage() {
   useEffect(() => {
     const wishlist = JSON.parse(localStorage.getItem("wishlist") || "[]");
 
-    if (product?._id) {
-      const exists = wishlist.some((p: any) => String(p._id) === String(product._id));
+    if (product?.product_id) {
+      const exists = wishlist.some((p: any) => String(p.product_id) === String(product._id));
       setIsWishlisted(exists);
     }
   }, [product]);
@@ -67,7 +69,7 @@ export default function ViewProductPage() {
     let wishlist = JSON.parse(localStorage.getItem("wishlist") || "[]");
 
     if (isWishlisted) {
-      wishlist = wishlist.filter((p: any) => String(p._id) !== String(product._id));
+      wishlist = wishlist.filter((p: any) => String(p.product_id) !== String(product.product_id));
     } else {
       wishlist.push(product);
     }
@@ -79,14 +81,16 @@ export default function ViewProductPage() {
  
   // 🛒 Add to Cart (no changes)
  
-  const handleAddToCart = () => {
-    let cart = JSON.parse(localStorage.getItem("cart") || "[]");
+const handleAddToCart = () => {
+  const product_id = product?._id || product?.product_id || product?.id;
 
-    cart.push(product);
-    localStorage.setItem("cart", JSON.stringify(cart));
+  if (!product_id) return;
 
-    setOpenDialog(true);
-  };
+  dispatch(addToCart({ product_id, quantity: 1 })) // ✅ matches type
+    .unwrap()
+    .then(() => setOpenDialog(true))
+    .catch((err) => console.error("Failed to add to cart:", err));
+};
 
   // -----------------------------------------
   // ⏳ Loading UI

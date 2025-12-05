@@ -1,11 +1,13 @@
-// redux/cartSlice.ts
+
+"use client"
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import api from "@/lib/api";
 import Cookies from "js-cookie";
+     
 
 // Cart item type
 interface CartItem {
-  _id: string;
+  product_id: string;
   product_name: string;
   image: string;
   price: number;
@@ -28,12 +30,27 @@ const initialState: CartState = {
 // ADD TO CART (POST)
 export const addToCart = createAsyncThunk(
   "cart/add",
-  async ({ productId, quantity }: { productId: string; quantity: number }) => {
+  async ({
+    product_id,
+    quantity,
+  }: {
+    product_id: string;
+    quantity: number;
+  }) => {
+    const token = Cookies.get("auth_token"); // get JWT token from cookie
+
     const res = await api.post(
       "/api/cart/add",
-      { productId, quantity },
-      { withCredentials: true }
+      { product_id, quantity },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // <-- set JWT here
+        },
+        withCredentials: true, // needed if backend uses cookies
+      }
     );
+
     return res.data.item;
   }
 );
@@ -41,8 +58,8 @@ export const addToCart = createAsyncThunk(
 // Fetch cart items from API
 export const fetchCartItems = createAsyncThunk("cart/fetch", async () => {
   const token = Cookies.get("auth_token");
-  const res = await api.get("/api/cart"); // replace with your endpoint
-  return res.data.items; // assuming API returns { items: [] }
+  const res = await api.get("/api/cart/list");
+  return res.data.items || []; // assuming API returns { items: [] }
 });
 
 const cartSlice = createSlice({
@@ -51,11 +68,11 @@ const cartSlice = createSlice({
   reducers: {
     updateQuantity(state, action: PayloadAction<{ id: string; qty: number }>) {
       const { id, qty } = action.payload;
-      const item = state.items.find((i) => i._id === id);
+      const item = state.items.find((i) => i.product_id === id);
       if (item) item.quantity = qty;
     },
     removeItem(state, action: PayloadAction<string>) {
-      state.items = state.items.filter((i) => i._id !== action.payload);
+      state.items = state.items.filter((i) => i.product_id !== action.payload);
     },
     clearCart(state) {
       state.items = [];
@@ -67,7 +84,9 @@ const cartSlice = createSlice({
         const added = action.payload;
 
         // Check if the product already exists in cart state
-        const exists = state.items.find((i) => i._id === added._id);
+        const exists = state.items.find(
+          (i) => i.product_id === added.product_id
+        );
 
         if (exists) {
           exists.quantity = added.quantity;
@@ -81,9 +100,12 @@ const cartSlice = createSlice({
       .addCase(fetchCartItems.fulfilled, (state, action) => {
         state.loading = false;
         state.items = action.payload.map((item: any) => ({
-          ...item,
+          product_id: item.product_id || item._id, // use _id if API returns it
+          product_name: item.product_name || item.name, // fallback if different key
+          image: item.image || "/placeholder.png",
+          price: Number(item.price || item.cost || 0),
           quantity: item.quantity || 1,
-          price: Number(item.price),
+          brand: item.brand || "N/A",
         }));
       })
       .addCase(fetchCartItems.rejected, (state, action) => {
