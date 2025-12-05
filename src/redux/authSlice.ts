@@ -28,7 +28,7 @@ export const signupUser = createAsyncThunk(
       const res = await api.post("/api/auth/register", formData);
 
       const token = res.data.accessToken;
-      const role = res.data.role;
+       const role = res.data.userRole;   
       const user = res.data.data;
 
       Cookies.set("auth_token", token, { path: "/" });
@@ -52,7 +52,7 @@ export const loginUser = createAsyncThunk(
       const res = await api.post("/api/auth/login", formData);
 
       const token = res.data.accessToken;
-      const role = res.data.role;
+      const role = res.data.userRole;
       const user = res.data.data;
 
       // Save in cookies

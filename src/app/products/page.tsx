@@ -7,6 +7,7 @@ import { listProducts } from "@/redux/productsSlice";
 import { Container, Typography, Box, Button, Card, CardMedia, CardContent } from "@mui/material";
 import Categories from "@/components/Categories";
 import Link from "next/link";
+import Navbar from "@/components/Navbar";
 
 export default function ProductsPage() {
   const dispatch = useDispatch<AppDispatch>();
@@ -40,6 +41,8 @@ const paginatedProducts = filteredProducts.slice(start, end);
       className="py-16"
       sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
     >
+         {/* Navbar */}
+      <Navbar />
       {/* Page Title */}
       <Typography variant="h3" align="center" sx={{ mb: 12, fontWeight: "bold" }}>
         Products

@@ -23,6 +23,8 @@ export default function CartPage() {
     
     <div className="w-full flex justify-center py-10">
       <div className="max-w-7xl w-full px-4">
+         {/* Navbar */}
+      <Navbar />
        
         <h1 className="text-3xl font-bold mb-6">Cart</h1>
 
