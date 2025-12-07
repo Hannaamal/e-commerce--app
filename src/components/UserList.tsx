@@ -1,41 +1,25 @@
-"use client";
-
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState, AppDispatch } from "@/redux/store";
 import {
-  Box,
-  Container,
-  Typography,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-} from "@mui/material";
+  fetchUsers,
+  updateUser,
+  toggleUserStatus,
+  User,
+} from "@/redux/userSlice";
+import { Box, Container, Typography, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from "@mui/material";
 import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 
-type User = {
-  id: number;
-  name: string;
-  email: string;
-  role: string;
-  status: string; // Active / Inactive
-};
-
 export default function UserList() {
-  const [users, setUsers] = useState<User[]>([
-    { id: 1, name: "John Doe", email: "john@example.com", role: "User", status: "Active" },
-    { id: 2, name: "Jane Smith", email: "jane@example.com", role: "User", status: "Inactive" },
-     { id: 3, name: "John Doe", email: "john@example.com", role: "User", status: "Active" },
-    { id: 4, name: "Jane Smith", email: "jane@example.com", role: "User", status: "Inactive" },
-     { id: 5, name: "John Doe", email: "john@example.com", role: "User", status: "Active" },
-    { id: 6, name: "Jane Smith", email: "jane@example.com", role: "User", status: "Inactive" },
-     { id: 7, name: "John Doe", email: "john@example.com", role: "User", status: "Active" },
-    { id: 8, name: "Jane Smith", email: "jane@example.com", role: "User", status: "Inactive" },
-  ]);
+  const dispatch = useDispatch<AppDispatch>();
+  const { users, loading } = useSelector((state: RootState) => state.users);
 
   const [editOpen, setEditOpen] = useState(false);
   const [editUser, setEditUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    dispatch(fetchUsers());
+  }, [dispatch]);
 
   const handleEditOpen = (user: User) => {
     setEditUser(user);
@@ -44,20 +28,19 @@ export default function UserList() {
 
   const handleEditSave = () => {
     if (!editUser) return;
-    setUsers(users.map((u) => (u.id === editUser.id ? editUser : u)));
+    dispatch(updateUser(editUser));
     setEditOpen(false);
   };
 
-  const handleToggleStatus = (id: number) => {
-    setUsers(
-      users.map((u) =>
-        u.id === id ? { ...u, status: u.status === "Active" ? "Inactive" : "Active" } : u
-      )
-    );
+  const handleToggleStatus = (user: User) => {
+    const newStatus = user.status === "Active" ? "Inactive" : "Active";
+    dispatch(toggleUserStatus({ id: user._id, status: newStatus }))
+  .unwrap()
+  .then(() => dispatch(fetchUsers()));
   };
 
   const columns: GridColDef[] = [
-    { field: "id", headerName: "ID", width: 70 },
+    { field: "_id", headerName: "ID", width: 150 },
     { field: "name", headerName: "Name", width: 200 },
     { field: "email", headerName: "Email", width: 250 },
     { field: "role", headerName: "Role", width: 150 },
@@ -69,19 +52,12 @@ export default function UserList() {
       sortable: false,
       renderCell: (params: GridRenderCellParams<User>) => (
         <Box sx={{ display: "flex", gap: 1, pt:1 }}>
-          <Button
-            variant="outlined"
-            size="small"
-            onClick={() => handleEditOpen(params.row)}
-          >
-            Edit
-          </Button>
-
+          <Button variant="outlined" size="small" onClick={() => handleEditOpen(params.row)}>Edit</Button>
           <Button
             variant="outlined"
             size="small"
             color={params.row.status === "Active" ? "warning" : "success"}
-            onClick={() => handleToggleStatus(params.row.id)}
+            onClick={() => handleToggleStatus(params.row)}
           >
             {params.row.status === "Active" ? "Deactivate" : "Activate"}
           </Button>
@@ -92,58 +68,31 @@ export default function UserList() {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 5 }}>
-      <Typography variant="h4" gutterBottom>
-        Users Management
-      </Typography>
+      <Typography variant="h4" gutterBottom>Users Management</Typography>
 
       <Box sx={{ height: 500, width: "100%" }}>
         <DataGrid
-            rows={users}
-            columns={columns}
-            pagination
-            pageSizeOptions={[5]}
-            initialState={{ pagination: { paginationModel: { pageSize: 5, page: 0 } } }}
-            />
+          rows={users}
+          columns={columns}
+          pagination
+          pageSizeOptions={[5]}
+          loading={loading}
+          getRowId={(row) => row._id}
+        />
       </Box>
 
       {/* Edit User Dialog */}
       <Dialog open={editOpen} onClose={() => setEditOpen(false)}>
         <DialogTitle>Edit User</DialogTitle>
         <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
-          <TextField
-            label="Name"
-            value={editUser?.name || ""}
-            onChange={(e) =>
-              setEditUser(editUser ? { ...editUser, name: e.target.value } : null)
-            }
-          />
-          <TextField
-            label="Email"
-            value={editUser?.email || ""}
-            onChange={(e) =>
-              setEditUser(editUser ? { ...editUser, email: e.target.value } : null)
-            }
-          />
-          <TextField
-            label="Role"
-            value={editUser?.role || ""}
-            onChange={(e) =>
-              setEditUser(editUser ? { ...editUser, role: e.target.value } : null)
-            }
-          />
-          <TextField
-            label="Status"
-            value={editUser?.status || ""}
-            onChange={(e) =>
-              setEditUser(editUser ? { ...editUser, status: e.target.value } : null)
-            }
-          />
+          <TextField label="Name" value={editUser?.name || ""} onChange={(e) => setEditUser(editUser ? { ...editUser, name: e.target.value } : null)} />
+          <TextField label="Email" value={editUser?.email || ""} onChange={(e) => setEditUser(editUser ? { ...editUser, email: e.target.value } : null)} />
+          <TextField label="Role" value={editUser?.role || ""} onChange={(e) => setEditUser(editUser ? { ...editUser, role: e.target.value } : null)} />
+          <TextField label="Status" value={editUser?.status || ""} onChange={(e) => setEditUser(editUser ? { ...editUser, status: e.target.value as "Active" | "Inactive" } : null)} />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setEditOpen(false)}>Cancel</Button>
-          <Button variant="contained" onClick={handleEditSave}>
-            Save
-          </Button>
+          <Button variant="contained" onClick={handleEditSave}>Save</Button>
         </DialogActions>
       </Dialog>
     </Container>

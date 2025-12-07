@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
 import { getProduct } from "@/redux/productsSlice";
-import { addToCart } from "@/redux/cartSlice";
+import { addToCart, fetchCartItems } from "@/redux/cartSlice";
 
 
 import {
@@ -86,22 +86,25 @@ const handleAddToCart = () => {
 
   if (!product_id) return;
 
-  dispatch(addToCart({ product_id, quantity: 1 })) // ✅ matches type
-    .unwrap()
-    .then(() => setOpenDialog(true))
-    .catch((err) => console.error("Failed to add to cart:", err));
+  dispatch(addToCart({ product_id, quantity: 1 }))
+  .unwrap()
+  .then(() => {
+    setOpenDialog(true);
+    dispatch(fetchCartItems()); // refresh after success
+  })
+  .catch((err) => console.error("Failed to add to cart:", err));
 };
 
-  // -----------------------------------------
+ 
   // ⏳ Loading UI
-  // -----------------------------------------
+ 
   if (loading || !product) {
     return <Typography sx={{ textAlign: "center", mt: 5 }}>Loading...</Typography>;
   }
 
-  // -----------------------------------------
+
   // UI Markup
-  // -----------------------------------------
+  
   return (
     <Box className="max-w-5xl mx-auto p-6">
       <Button variant="outlined" onClick={() => router.back()} sx={{ mb: 4 }}>
@@ -123,9 +126,9 @@ const handleAddToCart = () => {
         {/* IMAGE */}
         <Box sx={{ width: "45%" }}>
           <CardMedia
-            component="img"
-            image={product.image}
-            alt={product.product_name}
+             component="img"
+                    image={`${process.env.NEXT_PUBLIC_BACKEND_URL}/${product.image.replace(/\\/g, "/")}`}
+                    alt={product.name}
             sx={{
               width: "100%",
               height: 350,

@@ -1,22 +1,30 @@
-"use client"
+"use client";
 
 import { useEffect } from "react";
 import Image from "next/image";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "@/redux/store";
-import { fetchCartItems, updateQuantity, removeItem, clearCart } from "@/redux/cartSlice";
+import {
+  fetchCartItems,
+  updateCartQuantity,
+  deleteCartItem,
+  clearCartAPI,
+} from "@/redux/cartSlice";
 import Navbar from "@/components/Navbar";
 
 export default function CartPage() {
   const dispatch = useDispatch<AppDispatch>();
-  const { items: cartItems, loading } = useSelector((state: RootState) => state.cart);
+  const { items: cartItems, loading } = useSelector(
+    (state: RootState) => state.cart
+  );
 
   useEffect(() => {
     dispatch(fetchCartItems());
   }, [dispatch]);
 
   const validCartItems = cartItems.filter(
-    (item) => item && item.product_name && item.price != null && item.quantity != null
+    (item) =>
+      item && item.product_name && item.price != null && item.quantity != null
   );
 
   const subtotal = validCartItems.reduce(
@@ -44,15 +52,21 @@ export default function CartPage() {
                   className="flex items-center justify-between bg-gray-100 p-4 rounded-xl"
                 >
                   <Image
-                    src={item.image || "/placeholder.png"}
-                    alt={item.product_name}
+                    src={
+                      item?.product_id?.image
+                        ? `/${item.product_id.image}`
+                        : "/placeholder.png"
+                    }
+                    alt={item?.product_id?.product_name || "Product"}
                     width={110}
                     height={110}
                     className="rounded-lg"
                   />
 
                   <div className="flex-1 ml-5">
-                    <h2 className="font-semibold text-lg">{item.product_name}</h2>
+                    <h2 className="font-semibold text-lg">
+                      {item.product_name}
+                    </h2>
                     <p className="text-sm text-gray-500">Brand: {item.brand}</p>
                     <p className="font-semibold mt-1">${item.price}</p>
 
@@ -60,10 +74,14 @@ export default function CartPage() {
                       <button
                         onClick={() =>
                           dispatch(
-                            updateQuantity({ id: item.product_id, qty: item.quantity - 1 })
+                            updateCartQuantity({
+                              id: item.cart_id,
+                              qty: item.quantity - 1,
+                            })
                           )
+                            .unwrap()
+                            .then(() => dispatch(fetchCartItems()))
                         }
-                        className="w-8 h-8 flex items-center justify-center bg-gray-300 rounded-lg"
                       >
                         −
                       </button>
@@ -71,18 +89,18 @@ export default function CartPage() {
                       <button
                         onClick={() =>
                           dispatch(
-                            updateQuantity({ id: item.product_id, qty: item.quantity + 1 })
-                          )
+                           updateCartQuantity({ id: item.cart_id, qty: item.quantity + 1 }))
+                            .unwrap()
                         }
-                        className="w-8 h-8 flex items-center justify-center bg-gray-300 rounded-lg"
                       >
                         +
                       </button>
                     </div>
-
                     <button
-                      onClick={() => dispatch(removeItem(item.product_id))}
-                      className="text-red-600 text-sm mt-3"
+                      onClick={() =>
+                        dispatch(deleteCartItem(item.cart_id))
+                          .unwrap()
+                      }
                     >
                       Remove
                     </button>
@@ -112,7 +130,12 @@ export default function CartPage() {
             </div>
             <div className="flex justify-between text-lg font-bold border-t pt-4 mt-4">
               <span>Total</span>
-              <span>${(subtotal + (validCartItems.length === 0 ? 0 : 12.99)).toFixed(2)}</span>
+              <span>
+                $
+                {(subtotal + (validCartItems.length === 0 ? 0 : 12.99)).toFixed(
+                  2
+                )}
+              </span>
             </div>
 
             <button
@@ -128,7 +151,7 @@ export default function CartPage() {
 
             {validCartItems.length > 0 && (
               <button
-                onClick={() => dispatch(clearCart())}
+                onClick={() => dispatch(clearCartAPI())}
                 className="w-full border border-red-500 text-red-600 py-2 rounded-lg mt-4 hover:bg-red-600 hover:text-white"
               >
                 Clear Cart

@@ -1,9 +1,7 @@
-
-"use client"
+"use client";
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import api from "@/lib/api";
 import Cookies from "js-cookie";
-     
 
 // Cart item type
 interface CartItem {
@@ -51,33 +49,93 @@ export const addToCart = createAsyncThunk(
       }
     );
 
-    return res.data.item;
+    return res.data.cartItem;
   }
 );
 
 // Fetch cart items from API
-export const fetchCartItems = createAsyncThunk("cart/fetch", async () => {
-  const token = Cookies.get("auth_token");
-  const res = await api.get("/api/cart/list");
-  return res.data.items || []; // assuming API returns { items: [] }
-});
+export const fetchCartItems = createAsyncThunk(
+  "cart/fetchCartItems",
+  async (_, thunkAPI) => {
+    // get token from Redux state
+    const state: any = thunkAPI.getState();
+    const token = state.auth.token;
+
+    const res = await api.get("/api/cart/list", {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // ⬅ Add token here
+      },
+      withCredentials: true, // ⬅ If you use cookies also
+    });
+
+    console.log("Cart API response:", res.data);
+    return res.data || [];
+  }
+);
+
+// UPDATE cart item quantity
+export const updateCartQuantity = createAsyncThunk(
+  "cart/updateQuantity",
+  async ({ id, qty }: { id: string; qty: number }, thunkAPI) => {
+    const state: any = thunkAPI.getState();
+    const token = state.auth.token;
+
+    const res = await api.put(
+      `/api/cart/update/${id}`,
+      { quantity: qty },
+      {
+        headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true,
+      }
+    );
+
+    return res.data.cartItem;
+  }
+);
+
+// DELETE single cart item
+export const deleteCartItem = createAsyncThunk(
+  "cart/deleteItem",
+  async (id: string, thunkAPI) => {
+    const state: any = thunkAPI.getState();
+    const token = state.auth.token;
+
+    await api.delete(`/api/cart/remove/${id}`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      withCredentials: true,
+    });
+
+    return id; // return the deleted item's ID to update Redux state
+  }
+);
+
+// CLEAR entire cart
+export const clearCartAPI = createAsyncThunk(
+  "cart/clearCart",
+  async (_, thunkAPI) => {
+    const state: any = thunkAPI.getState();
+    const token = state.auth.token;
+
+    await api.delete("/api/cart/clear", {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      withCredentials: true,
+    });
+
+    return true;
+  }
+);
 
 const cartSlice = createSlice({
   name: "cart",
   initialState,
-  reducers: {
-    updateQuantity(state, action: PayloadAction<{ id: string; qty: number }>) {
-      const { id, qty } = action.payload;
-      const item = state.items.find((i) => i.product_id === id);
-      if (item) item.quantity = qty;
-    },
-    removeItem(state, action: PayloadAction<string>) {
-      state.items = state.items.filter((i) => i.product_id !== action.payload);
-    },
-    clearCart(state) {
-      state.items = [];
-    },
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
       .addCase(addToCart.fulfilled, (state, action) => {
@@ -99,21 +157,41 @@ const cartSlice = createSlice({
       })
       .addCase(fetchCartItems.fulfilled, (state, action) => {
         state.loading = false;
-        state.items = action.payload.map((item: any) => ({
-          product_id: item.product_id || item._id, // use _id if API returns it
-          product_name: item.product_name || item.name, // fallback if different key
-          image: item.image || "/placeholder.png",
-          price: Number(item.price || item.cost || 0),
-          quantity: item.quantity || 1,
-          brand: item.brand || "N/A",
+
+        const data = Array.isArray(action.payload) ? action.payload : [];
+        console.log("CART API RESPONSE:", action.payload);
+
+        state.items = data.map((item: any) => ({
+          product_id: item.product_id?._id,
+          cart_id: item._id,    
+          product_name: item.product_id?.product_name,
+          image:
+            item.product_id?.image?.replace("\\", "/") || "/placeholder.png",
+          brand: item.product_id?.brand,
+          price: Number(item.price),
+          quantity: item.quantity,
         }));
       })
       .addCase(fetchCartItems.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "Failed to load cart";
+      })
+      .addCase(updateCartQuantity.fulfilled, (state, action) => {
+        const updated = action.payload;
+        const item = state.items.find(
+          (i) => i.product_id === updated.product_id
+        );
+        if (item) item.quantity = updated.quantity;
+      })
+      .addCase(deleteCartItem.fulfilled, (state, action) => {
+        state.items = state.items.filter(
+          (i) => i.product_id !== action.payload
+        );
+      })
+      .addCase(clearCartAPI.fulfilled, (state) => {
+        state.items = [];
       });
   },
 });
 
-export const { updateQuantity, removeItem, clearCart } = cartSlice.actions;
 export default cartSlice.reducer;

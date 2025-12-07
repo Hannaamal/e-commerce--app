@@ -31,7 +31,7 @@ type Product = {
   category: string;
   price: number;
   stock: number;
- image?: string | File | null;  // <-- IMPORTANT
+  image?: string | File | null; // <-- IMPORTANT
   is_deleted: boolean;
 };
 
@@ -75,7 +75,11 @@ export default function AddProduct() {
       formData.append("image", image);
     }
 
-    dispatch(addProduct(formData));
+    dispatch(addProduct(formData))
+      .unwrap()
+      .then(() => {
+        dispatch(listProducts()); // 🔥 Refresh grid immediately
+      });
 
     setProductName("");
     setCategory("");
@@ -88,7 +92,9 @@ export default function AddProduct() {
 
   // Delete Product
   const handleDelete = (_id: string) => {
-    dispatch(deleteProduct(_id));
+    dispatch(deleteProduct(_id))
+      .unwrap()
+      .then(() => dispatch(listProducts()));
   };
 
   // Open Edit Dialog
@@ -98,26 +104,29 @@ export default function AddProduct() {
   };
 
   // Save Edited Product
- const handleEditSave = () => {
-  if (!editingProduct) return;
+  const handleEditSave = () => {
+    if (!editingProduct) return;
 
-  const formData = new FormData();
-  formData.append("product_name", editingProduct.product_name);
-  formData.append("description", editingProduct.discription);
-  formData.append("price", editingProduct.price.toString());
-  formData.append("stock", editingProduct.stock.toString());
-  formData.append("brand", editingProduct.brand);
-  formData.append("category", editingProduct.category);
+    const formData = new FormData();
+    formData.append("product_name", editingProduct.product_name);
+    formData.append("description", editingProduct.discription);
+    formData.append("price", editingProduct.price.toString());
+    formData.append("stock", editingProduct.stock.toString());
+    formData.append("brand", editingProduct.brand);
+    formData.append("category", editingProduct.category);
 
-  // If a new image was selected:
-  if (editingProduct.image instanceof File) {
-    formData.append("image", editingProduct.image);
-  }
+    if (editingProduct.image instanceof File) {
+      formData.append("image", editingProduct.image);
+    }
 
-  dispatch(editProduct({ id: editingProduct.id, productData: formData }));
-  setEditOpen(false);
-};
+    dispatch(editProduct({ id: editingProduct.id, productData: formData }))
+      .unwrap()
+      .then(() => {
+        dispatch(listProducts()); // 🔥 immediate refresh
+      });
 
+    setEditOpen(false);
+  };
 
   // Table Columns
   const columns: GridColDef[] = [
@@ -131,7 +140,7 @@ export default function AddProduct() {
       headerName: "Actions",
       width: 180,
       renderCell: (params: GridRenderCellParams<Product>) => (
-        <Box sx={{ display: "flex", gap: 1 }}>
+        <Box sx={{ display: "flex", gap: 1, pt:1.5 }}>
           <Button
             variant="outlined"
             size="small"
@@ -153,64 +162,123 @@ export default function AddProduct() {
   ];
 
   return (
-    <Container maxWidth="xl" sx={{ mt: 5 ,width: '800px',height: '600px'}}>
-      <Typography variant="h4" gutterBottom>
+    <Container
+      maxWidth="xl"
+      sx={{
+        mt: 5,
+        width: "100%",
+        padding: 0,
+        marginLeft: 0,
+      }}
+    >
+      <Typography variant="h4" gutterBottom sx={{ fontWeight: 700 }}>
         Add Product
       </Typography>
 
       {/* Add Product Form */}
-      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, mb: 10 }}>
+      <Box
+        sx={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 2,
+          mb: 5,
+          bgcolor: "#fff",
+          p: 3,
+          borderRadius: 2,
+          boxShadow: "0 0 10px rgba(0,0,0,0.1)",
+        }}
+      >
         <TextField
           label="Product Name"
           value={productName}
           onChange={(e) => setProductName(e.target.value)}
+          sx={{ flex: 1, minWidth: 200 }}
         />
         <TextField
           label="Category"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
+          sx={{ flex: 1, minWidth: 200 }}
         />
         <TextField
           type="number"
           label="Price"
           value={price}
           onChange={(e) => setPrice(e.target.value)}
+          sx={{ flex: 1, minWidth: 200 }}
         />
         <TextField
           type="number"
           label="Stock"
           value={stock}
           onChange={(e) => setStock(e.target.value)}
+          sx={{ flex: 1, minWidth: 200 }}
         />
         <TextField
           label="Description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
+          sx={{ flex: 1, minWidth: 200 }}
         />
         <TextField
           label="Brand"
           value={brand}
           onChange={(e) => setBrand(e.target.value)}
+          sx={{ flex: 1, minWidth: 200 }}
         />
+
         <input
           type="file"
           onChange={(e) => setImage(e.target.files ? e.target.files[0] : null)}
+          style={{ marginTop: "10px" }}
         />
-        <Button variant="contained" onClick={handleAddProduct}>
-          Add Product
+
+        <Button
+          variant="contained"
+          onClick={handleAddProduct}
+          sx={{ height: 40 }}
+        >
+          ADD PRODUCT
         </Button>
       </Box>
 
       {/* Products Table */}
-      <Box sx={{ height: 700, width: 700 }}>
+      <Box
+        sx={{
+          height: 650,
+          width: "100%",
+          maxWidth: "100%",
+          marginLeft: 0,
+          bgcolor: "#fff",
+          p: 2,
+          borderRadius: 2,
+          boxShadow: "0 0 10px rgba(0,0,0,0.1)",
+        }}
+      >
         <DataGrid rows={rows} columns={columns} pageSizeOptions={[5]} />
       </Box>
 
       {/* Edit Product Dialog */}
-      <Dialog open={editOpen} onClose={() => setEditOpen(false)}>
-        <DialogTitle>Edit Product</DialogTitle>
+      <Dialog
+        open={editOpen}
+        onClose={() => setEditOpen(false)}
+        PaperProps={{
+          sx: {
+            width: "450px",
+            p: 2,
+            borderRadius: "12px",
+          },
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 700 }}>Edit Product</DialogTitle>
+
         <DialogContent
-          sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+            mt: 1,
+          }}
         >
           <TextField
             label="Product Name"
@@ -261,6 +329,7 @@ export default function AddProduct() {
               )
             }
           />
+
           <TextField
             label="Description"
             value={editingProduct?.discription || ""}
@@ -284,11 +353,56 @@ export default function AddProduct() {
               )
             }
           />
+          {/* Existing Image Preview */}
+          {editingProduct?.image &&
+            typeof editingProduct.image === "string" && (
+              <Box sx={{ mt: 2 }}>
+                <Typography variant="body2" sx={{ mb: 1 }}>
+                  Current Image:
+                </Typography>
+                <img
+                  src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/${editingProduct.image}`}
+                  alt="Current product"
+                  style={{
+                    width: "120px",
+                    height: "120px",
+                    objectFit: "cover",
+                    borderRadius: "8px",
+                    border: "1px solid #ccc",
+                  }}
+                />
+              </Box>
+            )}
+
+          {/* New Image Upload */}
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="body2" sx={{ mb: 1 }}>
+              Change Image:
+            </Typography>
+            <input
+              type="file"
+              onChange={(e) =>
+                setEditingProduct(
+                  editingProduct
+                    ? { ...editingProduct, image: e.target.files?.[0] || null }
+                    : null
+                )
+              }
+            />
+          </Box>
         </DialogContent>
 
-        <DialogActions>
+        <DialogActions sx={{ px: 3 }}>
           <Button onClick={() => setEditOpen(false)}>Cancel</Button>
-          <Button onClick={handleEditSave} variant="contained">
+          <Button
+            onClick={handleEditSave}
+            variant="contained"
+            sx={{
+              bgcolor: "#1976d2",
+              "&:hover": { bgcolor: "#125ea8" },
+              px: 3,
+            }}
+          >
             Save
           </Button>
         </DialogActions>

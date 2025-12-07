@@ -4,7 +4,15 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "@/redux/store"; // your store types
 import { listProducts } from "@/redux/productsSlice";
-import { Container, Typography, Box, Button, Card, CardMedia, CardContent } from "@mui/material";
+import {
+  Container,
+  Typography,
+  Box,
+  Button,
+  Card,
+  CardMedia,
+  CardContent,
+} from "@mui/material";
 import Categories from "@/components/Categories";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
@@ -21,30 +29,34 @@ export default function ProductsPage() {
   useEffect(() => {
     dispatch(listProducts());
   }, [dispatch]);
-  
-const filteredProducts =
-  selectedCategory === "All"
-    ? products
-    : products.filter(
-        (p) => p.category?.toLowerCase() === selectedCategory.toLowerCase()
-      );
 
-// Pagination AFTER filtering
-const total = filteredProducts.length;
-const totalPages = Math.ceil(total / limit);
-const start = (page - 1) * limit;
-const end = start + limit;
-const paginatedProducts = filteredProducts.slice(start, end);
+  const filteredProducts =
+    selectedCategory === "All"
+      ? products
+      : products.filter(
+          (p) => p.category?.toLowerCase() === selectedCategory.toLowerCase()
+        );
+
+  // Pagination AFTER filtering
+  const total = filteredProducts.length;
+  const totalPages = Math.ceil(total / limit);
+  const start = (page - 1) * limit;
+  const end = start + limit;
+  const paginatedProducts = filteredProducts.slice(start, end);
 
   return (
     <Container
       className="py-16"
       sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
     >
-         {/* Navbar */}
+      {/* Navbar */}
       <Navbar />
       {/* Page Title */}
-      <Typography variant="h3" align="center" sx={{ mb: 12, fontWeight: "bold" }}>
+      <Typography
+        variant="h3"
+        align="center"
+        sx={{ mb: 12, fontWeight: "bold" }}
+      >
         Products
       </Typography>
 
@@ -62,14 +74,24 @@ const paginatedProducts = filteredProducts.slice(start, end);
           No products found.
         </Typography>
       ) : (
-        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 5, justifyContent: "center" }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 5,
+            justifyContent: "center",
+          }}
+        >
           {paginatedProducts.map((product) => (
             <Box key={product._id} sx={{ width: 300 }}>
-              <Link href={`/products/${product._id}`} style={{ textDecoration: "none" }}>
+              <Link
+                href={`/products/${product._id}`}
+                style={{ textDecoration: "none" }}
+              >
                 <Card className="shadow-lg rounded-xl" sx={{ height: 350 }}>
                   <CardMedia
                     component="img"
-                    image={product.image}
+                    image={`${process.env.NEXT_PUBLIC_BACKEND_URL}/${product.image.replace(/\\/g, "/")}`}
                     alt={product.name}
                     sx={{
                       height: 180,
@@ -81,7 +103,9 @@ const paginatedProducts = filteredProducts.slice(start, end);
                   />
                   <CardContent>
                     <Typography variant="h6">{product.product_name}</Typography>
-                    <Typography color="textSecondary">${product.price}</Typography>
+                    <Typography color="textSecondary">
+                      ${product.price}
+                    </Typography>
                   </CardContent>
                 </Card>
               </Link>
@@ -92,7 +116,15 @@ const paginatedProducts = filteredProducts.slice(start, end);
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <Box sx={{ display: "flex", justifyContent: "center", gap: 2, mt: 8, flexWrap: "wrap" }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            gap: 2,
+            mt: 8,
+            flexWrap: "wrap",
+          }}
+        >
           <Button
             variant="contained"
             disabled={page === 1}

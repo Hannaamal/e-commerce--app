@@ -7,7 +7,7 @@ type CategoriesProps = {
 const data = [
   { title: "All", icon: "🛒" },
   { title: "Beauty", icon: "💄" },
-  { title: "Fragnance", icon: "🌸" },
+  { title: "fragrances", icon: "🌸" },
   { title: "Furniture", icon: "🛋️" },
   { title: "Groceries", icon: "🛍️" }
 ]
