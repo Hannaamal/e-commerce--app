@@ -30,6 +30,7 @@ type Product = {
   brand: string;
   category: string;
   price: number;
+  rating: number;
   stock: number;
   image?: string | File | null; // <-- IMPORTANT
   is_deleted: boolean;
@@ -51,6 +52,7 @@ export default function AddProduct() {
   const [stock, setStock] = useState("");
   const [description, setDescription] = useState("");
   const [brand, setBrand] = useState("");
+  const [rating, setRating] = useState("");
   const [image, setImage] = useState<File | null>(null);
 
   useEffect(() => {
@@ -68,6 +70,7 @@ export default function AddProduct() {
     formData.append("category", category);
     formData.append("price", price);
     formData.append("stock", stock);
+    formData.append("rating", rating);
     formData.append("description", description);
     formData.append("brand", brand);
 
@@ -87,6 +90,7 @@ export default function AddProduct() {
     setStock("");
     setDescription("");
     setBrand("");
+    setRating("");
     setImage(null);
   };
 
@@ -113,6 +117,7 @@ export default function AddProduct() {
     formData.append("price", editingProduct.price.toString());
     formData.append("stock", editingProduct.stock.toString());
     formData.append("brand", editingProduct.brand);
+    formData.append("rating", editingProduct.rating.toString());
     formData.append("category", editingProduct.category);
 
     if (editingProduct.image instanceof File) {
@@ -135,6 +140,9 @@ export default function AddProduct() {
     { field: "category", headerName: "Category", width: 150 },
     { field: "price", headerName: "Price", width: 100 },
     { field: "stock", headerName: "Stock", width: 100 },
+    { field: "brand", headerName: "Brand", width: 150 },
+    { field: "rating", headerName: "Rating", width: 100 },
+
     {
       field: "actions",
       headerName: "Actions",
@@ -224,6 +232,13 @@ export default function AddProduct() {
           label="Brand"
           value={brand}
           onChange={(e) => setBrand(e.target.value)}
+          sx={{ flex: 1, minWidth: 200 }}
+        />
+        <TextField
+          type="number"
+          label="Rating"
+          value={rating}
+          onChange={(e) => setRating(e.target.value)}
           sx={{ flex: 1, minWidth: 200 }}
         />
 
@@ -353,6 +368,19 @@ export default function AddProduct() {
               )
             }
           />
+          <TextField
+            label="Rating"
+            type="number"
+            value={editingProduct?.rating || ""}
+            onChange={(e) =>
+              setEditingProduct(
+                editingProduct
+                  ? { ...editingProduct, rating: Number(e.target.value) }
+                  : null
+              )
+            }
+          />
+
           {/* Existing Image Preview */}
           {editingProduct?.image &&
             typeof editingProduct.image === "string" && (

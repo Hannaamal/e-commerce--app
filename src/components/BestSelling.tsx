@@ -1,56 +1,58 @@
 "use client";
-import Link from "next/link";
+import { useEffect } from "react";
+import { Button } from "@mui/material";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, RootState } from "@/redux/store";
+import { fetchBestSellingProducts } from "@/redux/bestsellingSlice";
 import { useRouter } from "next/navigation";
 
 export default function BestSelling() {
+  const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
 
-  const items = [
-    { id: 1, name: "Winter Jacket", price: "$260", oldPrice: "$330", img: "/images/photo-1547887537-6158d64c35b3.png" },
-    { id: 2, name: "Gucci Bag", price: "$960", oldPrice: "$1160", img: "/images/photo-1608571423902-eed4a5ad8108.png" },
-    { id: 3, name: "RGB CPU Cooler", price: "$160", oldPrice: "$190", img: "/images/premium_photo-1670537994863-5ad53a3214e0.png" },
-    { id: 4, name: "Small Bookshelf", price: "$360", oldPrice: "$400", img: "/images/photo-1608571423902-eed4a5ad8108.png" },
-    { id: 5, name: "Modern Lamp", price: "$120", oldPrice: "$150", img: "/images/premium_photo-1739831741770-008b9a494e32.png" },
-  ];
+  const { bestSelling, loading, error } = useSelector(
+    (state: RootState) => state.bestSelling
+  );
 
-  const handleSelectProduct = (product: any) => {
-    // Store the selected product in localStorage
-    localStorage.setItem("selectedProduct", JSON.stringify(product));
-    // Navigate to products page
-    router.push("/products");
-  };
+  useEffect(() => {
+    dispatch(fetchBestSellingProducts());
+  }, [dispatch]);
+
+  if (loading) return <p>Loading best-selling products...</p>;
+  if (error) return <p>Error: {error}</p>;
 
   return (
     <div className="w-full flex justify-center mt-10">
       <div className="max-w-7xl w-full px-4">
-
-        {/* HEADER */}
-        <div className="flex justify-between px-2 pb-4">
-          <h2 className="text-2xl font-bold">⭐ Best Selling Products</h2>
-          <Link href="/products">
-            <button className="px-4 py-2 border rounded bg-red-600 text-white hover:bg-red-700">
-              View All
-            </button>
-          </Link>
-        </div>
-
-        {/* PRODUCTS */}
+        <h2 className="text-2xl font-bold mb-3">🔥 Best Selling</h2>
         <div className="flex gap-5 overflow-x-auto pb-3">
-          {items.map((p) => (
+          {bestSelling.map((p) => (
             <div
-              key={p.id}
-              onClick={() => handleSelectProduct(p)}
-              className="border rounded-lg p-4 w-56 bg-white shadow hover:shadow-xl cursor-pointer transition no-underline"
+              key={p._id}
+              className="border rounded-lg p-4 w-56 bg-white shadow hover:shadow-lg transition cursor-pointer"
+              onClick={() => router.push(`/products/${p._id}`)}
             >
-              <div className="w-full h-36 flex justify-center items-center overflow-hidden">
-                <img src={p.img} className="h-full object-contain" alt={p.name} />
-              </div>
-
-              <p className="font-semibold mt-2">{p.name}</p>
-              <p className="text-red-600 font-bold">{p.price}</p>
-              <p className="line-through text-gray-500 text-sm">{p.oldPrice}</p>
+              <img
+                src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/${p.image.replace(/\\/g, "/")}`}
+                alt={p.product_name}
+                style={{
+                  height: 180,
+                  width: "100%",
+                  objectFit: "cover",
+                  borderTopLeftRadius: "12px",
+                  borderTopRightRadius: "12px",
+                }}
+              />
+              <p className="font-semibold">{p.product_name}</p>
+              <p className="text-red-500 font-bold">${p.price}</p>
+              <p className="text-yellow-600 text-sm">⭐ {p.rating}</p>
             </div>
           ))}
+        </div>
+        <div className="flex justify-center mt-6">
+          <Button color="error" onClick={() => router.push("/products")}>
+            View All Products
+          </Button>
         </div>
       </div>
     </div>

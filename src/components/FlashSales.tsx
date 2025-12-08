@@ -1,88 +1,61 @@
 "use client";
 
+import { useEffect } from "react";
 import { Button } from "@mui/material";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch } from "@/redux/store";
+import { listProducts } from "@/redux/adminSlice";
 
 export default function FlashSales() {
   const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
 
-  const products = [
-    {
-      id: "p1",
-      name: "HAVIT HV-G92 Gamepad",
-      price: "$120",
-      oldPrice: "$160",
-      off: "40%",
-      img: "images/photo-1547887537-6158d64c35b3.png",
-    },
-    {
-      id: "p2",
-      name: "AK-900 Wired Keyboard",
-      price: "$960",
-      oldPrice: "$1160",
-      off: "35%",
-      img: "images/premium_photo-1739831741770-008b9a494e32.png",
-    },
-    {
-      id: "p3",
-      name: "IPS LCD Gaming Monitor",
-      price: "$370",
-      oldPrice: "$400",
-      off: "25%",
-      img: "images/photo-1608571423902-eed4a5ad8108.png",
-    },
-    {
-      id: "p4",
-      name: "HAVIT HV-G92 Gamepad",
-      price: "$120",
-      oldPrice: "$160",
-      off: "40%",
-      img: "images/premium_photo-1670537994863-5ad53a3214e0.png",
-    },
-    {
-      id: "p5",
-      name: "AK-900 Wired Keyboard",
-      price: "$960",
-      oldPrice: "$1160",
-      off: "35%",
-      img: "images/Screenshot 2025-11-09 220929.png",
-    },
-  ];
+  const { products } = useSelector((state: any) => state.products);
 
-  const handleClickProduct = (productId: string) => {
-    // Save the clicked product ID
-    localStorage.setItem("selectedProductId", productId);
+  // 🔥 Fetch all products using Redux Thunk
+  useEffect(() => {
+    dispatch(listProducts());
+  }, [dispatch]);
 
-    // Navigate to products page
-    router.push("/products");
+  // 🔥 Get top-rated 5 products (sorted by rating)
+  const topRated = [...products]
+    .sort((a, b) => b.rating - a.rating)
+    .slice(0, 5);
+
+  const handleClickProduct = (id: string) => {
+    router.push(`/products/${id}`);
   };
 
   return (
     <div className="w-full flex justify-center mt-10">
       <div className="max-w-7xl w-full px-4">
         <div className="px-10 py-10">
-          <h2 className="text-2xl font-bold mb-3">🔥 Flash Sales</h2>
+          <h2 className="text-2xl font-bold mb-3">🔥 Flash Sales (Top Rated)</h2>
 
           {/* Cards */}
           <div className="flex gap-5 overflow-x-auto pb-3">
-            {products.map((p) => (
+            {topRated.map((p: any) => (
               <div
-                key={p.id}
+                key={p._id}
                 className="border rounded-lg p-4 w-56 bg-white shadow hover:shadow-lg transition cursor-pointer"
-                onClick={() => handleClickProduct(p.id)}
+                onClick={() => handleClickProduct(p._id)}
               >
                 <img
-                  src={p.img}
-                  alt={p.name}
-                  className="w-70 h-40 object-cover mb-3"
+                    src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/${p.image.replace(/\\/g, "/")}`}
+                    alt={p.product_name}
+                    style={{
+                      height: 180,
+                      width: "100%",
+                      objectFit: "cover",
+                      borderTopLeftRadius: "12px",
+                      borderTopRightRadius: "12px",
+                    }}
                 />
-                <p className="font-semibold">{p.name}</p>
-                <p className="text-red-500 font-bold">{p.price}</p>
-                <p className="line-through text-gray-500">{p.oldPrice}</p>
-                <span className="px-2 py-1 bg-red-500 text-white text-xs rounded">
-                  {p.off} OFF
-                </span>
+                <p className="font-semibold">{p.product_name}</p>
+                <p className="text-red-500 font-bold">${p.price}</p>
+                <p className="text-yellow-600 text-sm">⭐ {p.rating}</p>
               </div>
             ))}
           </div>

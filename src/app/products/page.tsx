@@ -17,19 +17,33 @@ import Categories from "@/components/Categories";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 
+import { useSearchParams } from "next/navigation";
+
+
 export default function ProductsPage() {
   const dispatch = useDispatch<AppDispatch>();
   const { products } = useSelector((state: RootState) => state.products);
 
-  const [page, setPage] = useState(1); // current page
-  const limit = 6; // products per page
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const searchParams = useSearchParams();
+  const categoryFromURL = searchParams.get("category") || "All";
 
-  // Fetch products from Redux
+  const [selectedCategory, setSelectedCategory] = useState(categoryFromURL);
+
+  const [page, setPage] = useState(1);
+  const limit = 6;
+
+  // 🚀 Fetch products
   useEffect(() => {
     dispatch(listProducts());
   }, [dispatch]);
 
+  // 🚀 Sync URL category with component state
+  useEffect(() => {
+    setSelectedCategory(categoryFromURL);
+    setPage(1);           // reset pagination when category changes
+  }, [categoryFromURL]);
+
+  // Filter products based on selected category
   const filteredProducts =
     selectedCategory === "All"
       ? products

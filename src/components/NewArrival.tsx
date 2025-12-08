@@ -4,6 +4,7 @@ export default function NewArrival() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-10">
       {/* Title */}
+
       <div className="mb-8">
         <p className="text-red-500 font-medium">Featured</p>
         <h2 className="text-3xl font-bold">New Arrival</h2>
@@ -11,7 +12,6 @@ export default function NewArrival() {
 
       {/* Main Grid */}
       <div className="grid md:grid-cols-2 gap-6">
-        
         {/* Left Big Card */}
         <div className="relative rounded-xl overflow-hidden shadow">
           <img
@@ -23,18 +23,17 @@ export default function NewArrival() {
             <p className="text-sm w-60">
               Black and White version of the PS5 coming out on sale.
             </p>
-            <Link href="/products">
-            <button className="mt-3 bg-white text-black px-4 py-1 rounded">
-              Shop Now
-            </button>
+
+            {/* Category: Gaming */}
+            <Link href={`/products?category=${encodeURIComponent("All")}`}>
+              <button className="mt-2 bg-white text-black px-4 py-1 rounded">Shop Now</button>
             </Link>
           </div>
         </div>
 
         {/* Right Cards Grid */}
         <div className="grid grid-cols-1 gap-6">
-          
-          {/* Top Right Card */}
+          {/* Women Collections */}
           <div className="relative rounded-xl overflow-hidden shadow">
             <img
               src="/images/beauty-photography-trends-2024-FI-683x1024.jpeg"
@@ -45,18 +44,18 @@ export default function NewArrival() {
               <p className="text-sm w-56">
                 Featured woman collections that give you another vibe.
               </p>
-              <Link href="/products">
-              <button className="mt-3 bg-white text-black px-4 py-1 rounded">
-                Shop Now
-              </button>
+
+              {/* Category: beauty */}
+              <Link href={`/products?category=${encodeURIComponent("Beauty")}`}>
+              
+                <button className="mt-2 bg-white text-black px-4 py-1 rounded">Shop Now</button>
               </Link>
             </div>
           </div>
 
           {/* Bottom Cards Row */}
           <div className="grid grid-cols-2 gap-6">
-            
-            {/* Speakers */}
+            {/* Furniture */}
             <div className="relative rounded-xl overflow-hidden shadow">
               <img
                 src="/images/hunyhuny-premium-rocking-glider-nursing-armchair-ottoman-cum-footstool-set-in-beige-colour.jpg"
@@ -65,10 +64,12 @@ export default function NewArrival() {
               <div className="absolute bottom-4 left-4 text-white">
                 <h3 className="text-lg font-semibold">Furnitures</h3>
                 <p className="text-sm">Simple and Elegent Furniture</p>
-                <Link href="/products">
-                <button className="mt-2 bg-white text-black px-4 py-1 rounded">
-                  Shop Now
-                </button>
+
+                {/* Category: Furniture */}
+                <Link href={`/products?category=${encodeURIComponent("Furniture")}`}>
+                  <button className="mt-2 bg-white text-black px-4 py-1 rounded">
+                    Shop Now
+                  </button>
                 </Link>
               </div>
             </div>
@@ -82,21 +83,21 @@ export default function NewArrival() {
               <div className="absolute bottom-4 left-4 text-white">
                 <h3 className="text-lg font-semibold">Perfume</h3>
                 <p className="text-sm">GUCCI INTENSE-OUD EDP</p>
-                <Link href="/products">
-                <button className="mt-2 bg-white text-black px-4 py-1 rounded">
-                  Shop Now
-                </button>
+
+                {/* Category: Perfume */}
+                <Link href={`/products?category=${encodeURIComponent("fragrances")}`}>
+                  <button className="mt-2 bg-white text-black px-4 py-1 rounded">
+                    Shop Now
+                  </button>
                 </Link>
               </div>
             </div>
-
           </div>
         </div>
       </div>
 
       {/* Features Row */}
       <div className="grid md:grid-cols-3 gap-10 mt-16 text-center">
-        
         <div>
           <div className="text-4xl mb-3">🚚</div>
           <h4 className="font-semibold">FREE AND FAST DELIVERY</h4>
@@ -114,7 +115,6 @@ export default function NewArrival() {
           <h4 className="font-semibold">MONEY BACK GUARANTEE</h4>
           <p className="text-sm">We return money within 30 days</p>
         </div>
-
       </div>
     </div>
   );

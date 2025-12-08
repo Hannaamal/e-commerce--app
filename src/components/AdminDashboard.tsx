@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { Box, Typography, Stack } from "@mui/material";
+
+import api from "@/lib/api";
 
 import StatCard from "@/components/StatCard";
 import RevenueChart from "@/components/RevenueChart";
@@ -10,6 +12,48 @@ import SatisfactionPie from "@/components/SatisfactionPie";
 
 export default function AdminDashboard() {
   const [products] = useState<any[]>([]);
+  const [totalProducts, setTotalProducts] = useState(0);
+  const [totalStock, setTotalStock] = useState(0);
+   const [topSelling, setTopSelling] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchTotalProducts = async () => {
+      try {
+        const res = await api.get("/api/count");
+        setTotalProducts(res.data.total);
+      } catch (err) {
+        console.error("Error fetching total products:", err);
+      }
+    };
+    fetchTotalProducts();
+  }, []);
+   useEffect(() => {
+    const fetchTotalStock = async () => {
+      try {
+        const res = await api.get("/api/total-stock");
+        setTotalStock(res.data.totalStock);
+      } catch (err) {
+        console.error("Error fetching total stock:", err);
+      }
+    };
+
+    fetchTotalStock();
+  }, []);
+
+  useEffect(() => {
+  const fetchTopSelling = async () => {
+    try {
+      const res = await api.get("/api/best-selling");
+      if (res.data.status) {
+        setTopSelling(res.data.data); // set the top-selling products state
+      }
+    } catch (err) {
+      console.error("Error fetching top-selling products:", err);
+    }
+  };
+
+  fetchTopSelling();
+}, []);
 
   const revenueData = [
     { day: "Sun", revenue: 1200 },
@@ -26,7 +70,6 @@ export default function AdminDashboard() {
     { name: "Others", value: 3.01 },
   ];
 
-  const topSelling = products.slice(0, 3);
 
   return (
     <Box sx={{ p: 4 }}>
@@ -43,14 +86,11 @@ export default function AdminDashboard() {
         }}
       >
         <Box>
-          <StatCard label="Total Products" value={products.length} />
+        <StatCard label="Total Products" value={totalProducts} />
         </Box>
 
         <Box>
-          <StatCard
-            label="Total Stock Count"
-            value={products.reduce((a, b) => a + (b.stock || 0), 0)}
-          />
+            <StatCard label="Total Stock Count" value={totalStock} />
         </Box>
 
         <Box>

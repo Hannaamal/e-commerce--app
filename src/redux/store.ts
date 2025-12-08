@@ -4,6 +4,8 @@ import productsReducer from "./productsSlice";
 import authReducer from "./authSlice";
 import cartReducer from "./cartSlice";
 import userReducer from "./userSlice";
+import topRatedReducer from "./topRatedSlice";
+import bestsellingReducer from "./bestsellingSlice";
 
 
 
@@ -13,6 +15,8 @@ export const store = configureStore({
      auth: authReducer, 
     cart: cartReducer,
      users: userReducer,
+      topRated: topRatedReducer,
+      bestSelling: bestsellingReducer,
   },
 });
 
