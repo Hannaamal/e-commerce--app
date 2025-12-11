@@ -94,11 +94,15 @@ export default function CategoryAdminPage() {
       width: 200,
       renderCell: (params) => (
         <img
-          src={params.value}
-          alt="category"
-          style={{ width: 50, height: 50, borderRadius: 8 }}
+              src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/${params.row.image}`}
+              alt={params.row.title}
+              style={{
+                height: 120,
+                width: "100%",
+                objectFit: "cover",
+              }}
         />
-      ),
+        ),
     },
     {
       field: "actions",
