@@ -85,7 +85,7 @@ export default function NewArrival() {
                 <p className="text-sm">GUCCI INTENSE-OUD EDP</p>
 
                 {/* Category: Perfume */}
-                <Link href={`/products?category=${encodeURIComponent("fragrances")}`}>
+                <Link href={`/products?category=${encodeURIComponent("Perfume")}`}>
                   <button className="mt-2 bg-white text-black px-4 py-1 rounded">
                     Shop Now
                   </button>

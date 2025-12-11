@@ -23,7 +23,8 @@ import {
   addProduct,
   editProduct,
   deleteProduct,
-} from "@/redux/adminSlice"; // <-- make sure this path is the actual slice file (see notes below)
+} from "@/redux/adminSlice";
+import { fetchCategories } from "@/redux/categorySlice"; // <-- make sure this path is the actual slice file (see notes below)
 
 type Product = {
   id: string;
@@ -76,7 +77,6 @@ export default function ProductsPage() {
 
   const fields: (keyof Product)[] = [
     "product_name",
-    "category",
     "price",
     "stock",
     "rating",
@@ -90,20 +90,33 @@ export default function ProductsPage() {
   }, [dispatch, page, pageSize]);
 
   const handleView = async (id: string) => {
-  try {
-    const res = await fetch(`http://localhost:5000/api/product/${id}`);
-    const data = await res.json();
+    try {
+      const res = await fetch(`http://localhost:5000/api/product/${id}`);
+      const data = await res.json();
 
-    console.log("VIEW DATA:", data);
+      console.log("VIEW DATA:", data);
 
-    // if backend returns { product: {...} }
-    setViewProduct(data.data || data);
+      // if backend returns { product: {...} }
+      setViewProduct(data.data || data);
 
-    setViewOpen(true);
-  } catch (error) {
-    console.error("View Error:", error);
-  }
-};
+      setViewOpen(true);
+    } catch (error) {
+      console.error("View Error:", error);
+    }
+  };
+
+  const [categories, setCategories] = useState<any[]>([]);
+
+ useEffect(() => {
+  fetch("http://localhost:5000/api/category/list")
+    .then((res) => res.json())
+    .then((data) => {
+      console.log("CATEGORY API RESPONSE", data);  // <-- tell me this output
+      setCategories(data.data || data);           // AUTO FIX
+    })
+    .catch((err) => console.error("Category Fetch Error:", err));
+}, []);
+
   // Add Product
   const handleAddProduct = () => {
     const fd = new FormData();
@@ -122,7 +135,6 @@ export default function ProductsPage() {
 
     setFormData({
       product_name: "",
-      category: "",
       price: 0,
       stock: 0,
       rating: 0,
@@ -192,7 +204,6 @@ export default function ProductsPage() {
     { field: "stock", headerName: "Stock", width: 100 },
     { field: "brand", headerName: "Brand", width: 150 },
     { field: "rating", headerName: "Rating", width: 100 },
-    
 
     {
       field: "actions",
@@ -264,6 +275,30 @@ export default function ProductsPage() {
             setFormData({ ...formData, image: e.target.files?.[0] || null })
           }
         />
+        {/* CATEGORY DROPDOWN */}
+        <select
+          style={{
+            minWidth: 200,
+            height: 55,
+            padding: "10px",
+            borderRadius: 5,
+            border: "1px solid #ccc",
+          }}
+          value={formData.category}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              category: e.target.value,
+            })
+          }
+        >
+          <option value="">Select Category</option>
+          {categories.map((cat: any) => (
+            <option key={cat._id} value={cat.title}>
+              {cat.title}
+            </option>
+          ))}
+        </select>
         <Button variant="contained" onClick={handleAddProduct}>
           Add Product
         </Button>
@@ -360,51 +395,71 @@ export default function ProductsPage() {
       >
         <DialogTitle>Product Details</DialogTitle>
 
-       <DialogContent sx={{ pt: 2 }}>
-  {viewProduct ? (
-    <Box
-      sx={{
-        display: "flex",
-        gap: 3,
-        flexDirection: { xs: "column", md: "row" }, // Responsive
-      }}
-    >
-      {/* LEFT SIDE — IMAGE */}
-      <Box sx={{ flex: 1, display: "flex", justifyContent: "center" }}>
-        {viewProduct.image && (
-          <img
-            src={
-              viewProduct.image?.startsWith("http")
-                ? viewProduct.image
-                : `http://localhost:5000/${viewProduct.image}`
-            }
-            alt="Product"
-            style={{
-              width: "100%",
-              maxWidth: 300,
-              borderRadius: 10,
-              objectFit: "cover",
-            }}
-          />
-        )}
-      </Box>
+        <DialogContent sx={{ pt: 2 }}>
+          {viewProduct ? (
+            <Box
+              sx={{
+                display: "flex",
+                gap: 3,
+                flexDirection: { xs: "column", md: "row" }, // Responsive
+              }}
+            >
+              {/* LEFT SIDE — IMAGE */}
+              <Box sx={{ flex: 1, display: "flex", justifyContent: "center" }}>
+                {viewProduct.image && (
+                  <img
+                    src={
+                      viewProduct.image?.startsWith("http")
+                        ? viewProduct.image
+                        : `http://localhost:5000/${viewProduct.image}`
+                    }
+                    alt="Product"
+                    style={{
+                      width: "100%",
+                      maxWidth: 300,
+                      borderRadius: 10,
+                      objectFit: "cover",
+                    }}
+                  />
+                )}
+              </Box>
 
-      {/* RIGHT SIDE — TEXT */}
-      <Box sx={{ flex: 1, display: "flex", flexDirection: "column", gap: 1 }}>
-        <Typography><strong>Name:</strong> {viewProduct.product_name}</Typography>
-        <Typography><strong>Category:</strong> {viewProduct.category}</Typography>
-        <Typography><strong>Brand:</strong> {viewProduct.brand}</Typography>
-        <Typography><strong>Price:</strong> ₹{viewProduct.price}</Typography>
-        <Typography><strong>Stock:</strong> {viewProduct.stock}</Typography>
-        <Typography><strong>Rating:</strong> {viewProduct.rating}</Typography>
-        <Typography><strong>Description:</strong> {viewProduct.description}</Typography>
-      </Box>
-    </Box>
-  ) : (
-    <Typography>Loading...</Typography>
-  )}
-</DialogContent>
-
+              {/* RIGHT SIDE — TEXT */}
+              <Box
+                sx={{
+                  flex: 1,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 1,
+                }}
+              >
+                <Typography>
+                  <strong>Name:</strong> {viewProduct.product_name}
+                </Typography>
+                <Typography>
+                  <strong>Category:</strong> {viewProduct.category}
+                </Typography>
+                <Typography>
+                  <strong>Brand:</strong> {viewProduct.brand}
+                </Typography>
+                <Typography>
+                  <strong>Price:</strong> ₹{viewProduct.price}
+                </Typography>
+                <Typography>
+                  <strong>Stock:</strong> {viewProduct.stock}
+                </Typography>
+                <Typography>
+                  <strong>Rating:</strong> {viewProduct.rating}
+                </Typography>
+                <Typography>
+                  <strong>Description:</strong> {viewProduct.description}
+                </Typography>
+              </Box>
+            </Box>
+          ) : (
+            <Typography>Loading...</Typography>
+          )}
+        </DialogContent>
       </Dialog>
     </Container>
   );

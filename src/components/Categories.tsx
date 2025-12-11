@@ -1,6 +1,7 @@
 "use client";
 
 import { Box, Typography, Card, CardMedia, CardContent } from "@mui/material";
+import { useState } from "react";
 
 type Category = {
   _id: string;
@@ -13,7 +14,11 @@ type CategoriesProps = {
   onSelectCategory: (category: string) => void;
 };
 
-export default function Categories({ data = [], onSelectCategory }: CategoriesProps) {
+export default function Categories({
+  data = [],
+  onSelectCategory,
+}: CategoriesProps) {
+  const [active, setActive] = useState<string | null>(null);
 
   return (
     <Box sx={{ width: "100%", mb: 5 }}>
@@ -39,18 +44,24 @@ export default function Categories({ data = [], onSelectCategory }: CategoriesPr
         {data.map((cat) => (
           <Card
             key={cat._id}
-            onClick={() => onSelectCategory(cat.title)}
+            onClick={() => {
+              setActive(cat._id);
+              onSelectCategory(cat.title);
+            }}
             sx={{
-              width: 180,
-              height: 180,
+              width: active === cat._id ? 130 : 180,
+              height: active === cat._id ? 200 : 180,
               cursor: "pointer",
               borderRadius: "14px",
               overflow: "hidden",
-              boxShadow: "0px 3px 10px rgba(0,0,0,0.15)",
+              boxShadow:
+                active === cat._id
+                  ? "0px 4px 5px rgba(0,0,0,0.25)"
+                  : "0px 3px 5px rgba(0,0,0,0.15)",
               transition: "0.25s",
+              transform: active === cat._id ? "scale(1.05)" : "scale(1)",
               "&:hover": {
-                transform: "translateY(-5px)",
-                boxShadow: "0px 5px 18px rgba(0,0,0,0.25)",
+                transform: active === cat._id ? "scale(1.08)" : "scale(1.05)",
               },
             }}
           >
