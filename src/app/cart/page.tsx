@@ -10,7 +10,7 @@ import {
   deleteCartItem,
   clearCartAPI,
 } from "@/redux/cartSlice";
-import Navbar from "@/components/Navbar";
+import { useRouter } from "next/navigation";
 
 export default function CartPage() {
   const dispatch = useDispatch<AppDispatch>();
@@ -33,11 +33,17 @@ export default function CartPage() {
   );
 
   if (loading) return <p className="text-center mt-10">Loading cart...</p>;
+  const router = useRouter();
+
+  const handleCheckout = () => {
+    if (validCartItems.length > 0) {
+      router.push("/checkout"); // navigate to checkout
+    }
+  };
 
   return (
     <div className="w-full flex justify-center py-10">
       <div className="max-w-7xl w-full px-4">
-        <Navbar />
 
         <h1 className="text-3xl font-bold mb-6">Cart</h1>
 
@@ -51,16 +57,15 @@ export default function CartPage() {
                   key={item.product_id}
                   className="flex items-center justify-between bg-gray-100 p-4 rounded-xl"
                 >
-                  <Image
-                    src={
-                      item?.product_id?.image
-                        ? `/${item.product_id.image}`
-                        : "/placeholder.png"
-                    }
-                    alt={item?.product_id?.product_name || "Product"}
+                  <img
+                    src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/${
+                      item.product_id?.image
+                        ? item.product_id.image.replace(/\\/g, "/")
+                        : "placeholder.png"
+                    }`}
+                    alt={item.product_id?.product_name || "Product"}
                     width={110}
                     height={110}
-                    className="rounded-lg"
                   />
 
                   <div className="flex-1 ml-5">
@@ -89,8 +94,11 @@ export default function CartPage() {
                       <button
                         onClick={() =>
                           dispatch(
-                           updateCartQuantity({ id: item.cart_id, qty: item.quantity + 1 }))
-                            .unwrap()
+                            updateCartQuantity({
+                              id: item.cart_id,
+                              qty: item.quantity + 1,
+                            })
+                          ).unwrap()
                         }
                       >
                         +
@@ -98,8 +106,7 @@ export default function CartPage() {
                     </div>
                     <button
                       onClick={() =>
-                        dispatch(deleteCartItem(item.cart_id))
-                          .unwrap()
+                        dispatch(deleteCartItem(item.cart_id)).unwrap()
                       }
                     >
                       Remove
@@ -140,6 +147,7 @@ export default function CartPage() {
 
             <button
               disabled={validCartItems.length === 0}
+              onClick={handleCheckout}
               className={`w-full py-3 rounded-lg mt-5 ${
                 validCartItems.length === 0
                   ? "bg-gray-300 text-gray-500 cursor-not-allowed"

@@ -26,11 +26,20 @@ const initialState: ProductState = {
 
 
 //  List all products
-export const listProducts = createAsyncThunk('products/list', async () => {
-  const res = await api.get('/api/products');
-  console.log(res.data); 
-  return res.data;
-});
+
+
+export const listProducts = createAsyncThunk(
+  "products/fetch",
+  async (category: string) => {
+    const query = category && category !== "All" ? `?category=${category}` : "";
+    const res = await api.get(`/api/products${query}`);
+    return res.data.data;
+  }
+);
+
+
+
+
 
 //  Get single product
 export const getProduct = createAsyncThunk('products/get', async (id: string) => {
@@ -56,7 +65,7 @@ const productSlice = createSlice({
       })
       .addCase(listProducts.fulfilled, (state, action) => {
         state.loading = false;
-        state.products = action.payload.data;
+        state.products = action.payload;
        
        
         

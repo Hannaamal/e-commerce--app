@@ -21,7 +21,6 @@ import MenuIcon from "@mui/icons-material/Menu";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
 import BarChartIcon from "@mui/icons-material/BarChart";
-import SettingsIcon from "@mui/icons-material/Settings";
 import GroupIcon from "@mui/icons-material/Group";
 import LogoutIcon from "@mui/icons-material/Logout";
 
@@ -50,6 +49,7 @@ export default function AdminNavbar() {
   const navItems = [
     { label: "Dashboard", icon: <DashboardIcon />, path: "/admin" },
     { label: "Products", icon: <ShoppingBagIcon />, path: "/admin/product" },
+    {label: "Category", icon: <GroupIcon />, path: "/admin/category" },
     { label: "Reports", icon: <BarChartIcon />, path: "/admin/reports" },
     { label: "Users", icon: <GroupIcon />, path: "/admin/users" },
   ];

@@ -2,6 +2,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import ReduxProvider from "@/components/ReduxProvider";
+import NavbarWrapper from "@/components/NavbarWrapper";
+import { AuthProvider } from "@/Context/AuthContext";
 
 
 export const metadata: Metadata = {
@@ -20,8 +22,10 @@ export default function RootLayout({
         className={`antialiased`}
       >
         <ReduxProvider>
-
-        {children}
+          <AuthProvider>
+            <NavbarWrapper />          {/* ⬅️ show navbar on all pages */}
+          <main>{children}</main>
+          </AuthProvider>
         </ReduxProvider>
 
       </body>

@@ -6,17 +6,17 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch } from "@/redux/store";
-import { listProducts } from "@/redux/adminSlice";
+import { fetchTopRatedProducts } from "@/redux/topRatedSlice";
 
 export default function FlashSales() {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
 
-  const { products } = useSelector((state: any) => state.products);
+  const { products } = useSelector((state: any) => state.topRated);
 
   // 🔥 Fetch all products using Redux Thunk
   useEffect(() => {
-    dispatch(listProducts());
+    dispatch(fetchTopRatedProducts());
   }, [dispatch]);
 
   // 🔥 Get top-rated 5 products (sorted by rating)

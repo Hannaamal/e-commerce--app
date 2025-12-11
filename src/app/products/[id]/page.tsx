@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
 import { getProduct } from "@/redux/productsSlice";
 import { addToCart, fetchCartItems } from "@/redux/cartSlice";
-
+import { addWishlist, removeWishlist } from "@/redux/wishlistSlice";
 
 import {
   Dialog,
@@ -30,17 +30,22 @@ export default function ViewProductPage() {
   const router = useRouter();
 
   const dispatch = useDispatch<AppDispatch>();
+  
+  const wishlistItems = useSelector((state: any) => state.wishlist.items);
 
   const { product, loading } = useSelector(
     (state: RootState) => state.products
   );
 
+
+
   //  dialog
   const [openDialog, setOpenDialog] = useState(false);
+   const [isWishlisted, setIsWishlisted] = useState(false);
 
   // wishlist local state
-  const [isWishlisted, setIsWishlisted] = useState(false);
 
+ 
   // -----------------------------------------
   // 🚀 Fetch product from Redux on page load
   // -----------------------------------------
@@ -50,61 +55,65 @@ export default function ViewProductPage() {
     }
   }, [id, dispatch]);
 
- 
   // Wishlist from localStorage
- 
-  useEffect(() => {
-    const wishlist = JSON.parse(localStorage.getItem("wishlist") || "[]");
 
-    if (product?.product_id) {
-      const exists = wishlist.some((p: any) => String(p.product_id) === String(product._id));
-      setIsWishlisted(exists);
-    }
-  }, [product]);
+   useEffect(() => {
+    if (!product?._id || !wishlistItems) return;
 
- 
+    const exists = wishlistItems.some(
+      (item: any) => String(item.product_id) === String(product._id)
+    );
+
+    setIsWishlisted(exists);
+  }, [wishlistItems, product]);
+
   // ❤️ Wishlist Toggle (no changes)
- 
+
   const handleWishlist = () => {
-    let wishlist = JSON.parse(localStorage.getItem("wishlist") || "[]");
+    if (!product?._id) return;
 
     if (isWishlisted) {
-      wishlist = wishlist.filter((p: any) => String(p.product_id) !== String(product.product_id));
-    } else {
-      wishlist.push(product);
-    }
+      const item = wishlistItems.find(
+        (i: any) => String(i.product_id) === String(product._id)
+      );
 
-    localStorage.setItem("wishlist", JSON.stringify(wishlist));
-    setIsWishlisted(!isWishlisted);
+      if (item) {
+        dispatch(removeWishlist(item._id));
+      }
+
+      setIsWishlisted(false);
+    } else {
+      dispatch(addWishlist(product._id));
+      setIsWishlisted(true);
+    }
   };
 
- 
   // 🛒 Add to Cart (no changes)
- 
-const handleAddToCart = () => {
-  const product_id = product?._id || product?.product_id || product?.id;
 
-  if (!product_id) return;
+  const handleAddToCart = () => {
+    const product_id = product?._id || product?.product_id || product?.id;
 
-  dispatch(addToCart({ product_id, quantity: 1 }))
-  .unwrap()
-  .then(() => {
-    setOpenDialog(true);
-    dispatch(fetchCartItems()); // refresh after success
-  })
-  .catch((err) => console.error("Failed to add to cart:", err));
-};
+    if (!product_id) return;
 
- 
+    dispatch(addToCart({ product_id, quantity: 1 }))
+      .unwrap()
+      .then(() => {
+        setOpenDialog(true);
+        dispatch(fetchCartItems()); // refresh after success
+      })
+      .catch((err) => console.error("Failed to add to cart:", err));
+  };
+
   // ⏳ Loading UI
- 
+
   if (loading || !product) {
-    return <Typography sx={{ textAlign: "center", mt: 5 }}>Loading...</Typography>;
+    return (
+      <Typography sx={{ textAlign: "center", mt: 5 }}>Loading...</Typography>
+    );
   }
 
-
   // UI Markup
-  
+
   return (
     <Box className="max-w-5xl mx-auto p-6">
       <Button variant="outlined" onClick={() => router.back()} sx={{ mb: 4 }}>
@@ -126,9 +135,11 @@ const handleAddToCart = () => {
         {/* IMAGE */}
         <Box sx={{ width: "45%" }}>
           <CardMedia
-             component="img"
-                    image={`${process.env.NEXT_PUBLIC_BACKEND_URL}/${product.image.replace(/\\/g, "/")}`}
-                    alt={product.name}
+            component="img"
+            image={`${
+              process.env.NEXT_PUBLIC_BACKEND_URL
+            }/${product.image.replace(/\\/g, "/")}`}
+            alt={product.name}
             sx={{
               width: "100%",
               height: 350,
@@ -161,7 +172,10 @@ const handleAddToCart = () => {
             {product.description}
           </Typography>
 
-          <Typography variant="h5" sx={{ fontWeight: "bold", color: "#2563eb" }}>
+          <Typography
+            variant="h5"
+            sx={{ fontWeight: "bold", color: "#2563eb" }}
+          >
             ${product.price}
           </Typography>
 
@@ -207,12 +221,16 @@ const handleAddToCart = () => {
               <DialogTitle>Added to Cart 🎉</DialogTitle>
               <DialogContent>
                 <Typography>
-                  {product.product_name} has been added to your cart successfully!
+                  {product.product_name} has been added to your cart
+                  successfully!
                 </Typography>
               </DialogContent>
               <DialogActions>
                 <Button onClick={() => setOpenDialog(false)}>Close</Button>
-                <Button variant="contained" onClick={() => setOpenDialog(false)}>
+                <Button
+                  variant="contained"
+                  onClick={() => setOpenDialog(false)}
+                >
                   OK
                 </Button>
               </DialogActions>

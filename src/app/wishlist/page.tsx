@@ -13,6 +13,7 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useRouter } from "next/navigation";
 
+
 export default function WishlistPage() {
   const [wishlist, setWishlist] = useState<any[]>([]);
   const router = useRouter();

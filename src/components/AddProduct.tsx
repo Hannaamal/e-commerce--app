@@ -15,154 +15,216 @@ import {
 import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch } from "@/redux/store";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 import {
   listProducts,
   addProduct,
   editProduct,
   deleteProduct,
-} from "@/redux/adminSlice";
+} from "@/redux/adminSlice"; // <-- make sure this path is the actual slice file (see notes below)
 
-// Fix Type (MongoDB IDs are strings)
 type Product = {
   id: string;
   product_name: string;
-  discription: string;
+  description: string;
   brand: string;
   category: string;
   price: number;
   rating: number;
   stock: number;
-  image?: string | File | null; // <-- IMPORTANT
+  image?: string | File | null;
   is_deleted: boolean;
 };
 
-export default function AddProduct() {
+export default function ProductsPage() {
   const dispatch = useDispatch<AppDispatch>();
-  const { products } = useSelector((state: any) => state.products);
 
-  // Convert MongoDB _id → id for DataGrid
-  const rows = products.map((item: any) => ({
-    id: item._id,
-    ...item,
-  }));
+  // // IMPORTANT: ensure this matches the key used in your store combineReducers
+  // // If your reducer is registered under `admin`, use state.admin. If under `products`, use state.products.
+  // // Example debug log to confirm:
+  // const fullState = useSelector((s: any) => s); console.log('FULL STATE', fullState)
+  const { products = [], total = 0 } = useSelector(
+    (state: any) => state.adminProducts || {}
+  ); // safer default
 
-  const [productName, setProductName] = useState("");
-  const [category, setCategory] = useState("");
-  const [price, setPrice] = useState("");
-  const [stock, setStock] = useState("");
-  const [description, setDescription] = useState("");
-  const [brand, setBrand] = useState("");
-  const [rating, setRating] = useState("");
-  const [image, setImage] = useState<File | null>(null);
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [viewOpen, setViewOpen] = useState(false);
+  const [viewProduct, setViewProduct] = useState<any>(null);
 
-  useEffect(() => {
-    dispatch(listProducts());
-  }, [dispatch]);
+  // Form state
+  const [formData, setFormData] = useState<
+    Partial<Product> & { image?: File | null }
+  >({
+    product_name: "",
+    category: "",
+    price: 0,
+    stock: 0,
+    rating: 0,
+    description: "",
+    brand: "",
+    image: null,
+  });
 
-  // Edit Dialog States
+  // Edit dialog
   const [editOpen, setEditOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
+  const fields: (keyof Product)[] = [
+    "product_name",
+    "category",
+    "price",
+    "stock",
+    "rating",
+    "description",
+    "brand",
+    "image",
+  ];
+
+  useEffect(() => {
+    dispatch(listProducts({ skip: page * pageSize, limit: pageSize }));
+  }, [dispatch, page, pageSize]);
+
+  const handleView = async (id: string) => {
+  try {
+    const res = await fetch(`http://localhost:5000/api/product/${id}`);
+    const data = await res.json();
+
+    console.log("VIEW DATA:", data);
+
+    // if backend returns { product: {...} }
+    setViewProduct(data.data || data);
+
+    setViewOpen(true);
+  } catch (error) {
+    console.error("View Error:", error);
+  }
+};
   // Add Product
   const handleAddProduct = () => {
-    const formData = new FormData();
-    formData.append("product_name", productName);
-    formData.append("category", category);
-    formData.append("price", price);
-    formData.append("stock", stock);
-    formData.append("rating", rating);
-    formData.append("description", description);
-    formData.append("brand", brand);
+    const fd = new FormData();
+    fields.forEach((field) => {
+      if (formData[field] !== null && formData[field] !== undefined) {
+        fd.append(field, formData[field]!.toString());
+      }
+    });
+    if (formData.image) fd.append("image", formData.image);
 
-    if (image) {
-      formData.append("image", image);
-    }
-
-    dispatch(addProduct(formData))
+    dispatch(addProduct(fd))
       .unwrap()
-      .then(() => {
-        dispatch(listProducts()); // 🔥 Refresh grid immediately
-      });
+      .then(() =>
+        dispatch(listProducts({ skip: page * pageSize, limit: pageSize }))
+      );
 
-    setProductName("");
-    setCategory("");
-    setPrice("");
-    setStock("");
-    setDescription("");
-    setBrand("");
-    setRating("");
-    setImage(null);
+    setFormData({
+      product_name: "",
+      category: "",
+      price: 0,
+      stock: 0,
+      rating: 0,
+      description: "",
+      brand: "",
+      image: null,
+    });
   };
 
   // Delete Product
-  const handleDelete = (_id: string) => {
-    dispatch(deleteProduct(_id))
+  const handleDelete = (id: string) => {
+    dispatch(deleteProduct(id))
       .unwrap()
-      .then(() => dispatch(listProducts()));
+      .then(() =>
+        dispatch(listProducts({ skip: page * pageSize, limit: pageSize }))
+      );
+    setOpenDeleteDialog(true);
+  };
+  const handleDeleteClick = (id: string) => {
+    setSelectedId(id);
+    setOpenDeleteDialog(true);
   };
 
-  // Open Edit Dialog
-  const handleEditOpen = (product: Product) => {
-    setEditingProduct(product);
-    setEditOpen(true);
+  const handleConfirmDelete = () => {
+    if (!selectedId) return;
+
+    dispatch(deleteProduct(selectedId))
+      .unwrap()
+      .then(() =>
+        dispatch(listProducts({ skip: page * pageSize, limit: pageSize }))
+      )
+      .catch((err) => console.error("Delete Error:", err));
+
+    setOpenDeleteDialog(false);
   };
 
-  // Save Edited Product
+  const handleCancel = () => {
+    setOpenDeleteDialog(false);
+  };
+
+  // Save Edit
   const handleEditSave = () => {
     if (!editingProduct) return;
 
-    const formData = new FormData();
-    formData.append("product_name", editingProduct.product_name);
-    formData.append("description", editingProduct.discription);
-    formData.append("price", editingProduct.price.toString());
-    formData.append("stock", editingProduct.stock.toString());
-    formData.append("brand", editingProduct.brand);
-    formData.append("rating", editingProduct.rating.toString());
-    formData.append("category", editingProduct.category);
+    const fd = new FormData();
+    fields.forEach((field) => {
+      const value = editingProduct[field];
+      if (value !== null && value !== undefined)
+        fd.append(field, value.toString());
+    });
+    if (editingProduct.image instanceof File)
+      fd.append("image", editingProduct.image);
 
-    if (editingProduct.image instanceof File) {
-      formData.append("image", editingProduct.image);
-    }
-
-    dispatch(editProduct({ id: editingProduct.id, productData: formData }))
+    dispatch(editProduct({ id: editingProduct.id, productData: fd }))
       .unwrap()
-      .then(() => {
-        dispatch(listProducts()); // 🔥 immediate refresh
-      });
+      .then(() =>
+        dispatch(listProducts({ skip: page * pageSize, limit: pageSize }))
+      );
 
     setEditOpen(false);
   };
 
-  // Table Columns
   const columns: GridColDef[] = [
-    { field: "id", headerName: "ID", width: 200 },
     { field: "product_name", headerName: "Name", width: 200 },
     { field: "category", headerName: "Category", width: 150 },
     { field: "price", headerName: "Price", width: 100 },
     { field: "stock", headerName: "Stock", width: 100 },
     { field: "brand", headerName: "Brand", width: 150 },
     { field: "rating", headerName: "Rating", width: 100 },
+    
 
     {
       field: "actions",
       headerName: "Actions",
-      width: 180,
+      width: 250,
       renderCell: (params: GridRenderCellParams<Product>) => (
-        <Box sx={{ display: "flex", gap: 1, pt:1.5 }}>
+        <Box sx={{ display: "flex", gap: 1, pt: 1 }}>
+          {/* View Button */}
           <Button
-            variant="outlined"
+            variant="text"
             size="small"
-            onClick={() => handleEditOpen(params.row)}
+            onClick={() => handleView(params.row.id)}
           >
-            Edit
+            <VisibilityIcon color="primary" />
           </Button>
           <Button
-            variant="outlined"
+            variant="text"
+            size="small"
+            onClick={() => {
+              setEditingProduct(params.row);
+              setEditOpen(true);
+            }}
+          >
+            <EditIcon color="action" />
+          </Button>
+          <Button
+            variant="text"
             color="error"
             size="small"
-            onClick={() => handleDelete(params.row.id)}
+            onClick={() => handleDeleteClick(params.row.id)}
           >
-            Delete
+            <DeleteIcon color="error" />
           </Button>
         </Box>
       ),
@@ -170,270 +232,179 @@ export default function AddProduct() {
   ];
 
   return (
-    <Container
-      maxWidth="xl"
-      sx={{
-        mt: 5,
-        width: "100%",
-        padding: 0,
-        marginLeft: 0,
-      }}
-    >
-      <Typography variant="h4" gutterBottom sx={{ fontWeight: 700 }}>
-        Add Product
+    <Container maxWidth="xl" sx={{ mt: 5 }}>
+      <Typography variant="h4" gutterBottom>
+        Products
       </Typography>
 
       {/* Add Product Form */}
-      <Box
-        sx={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 2,
-          mb: 5,
-          bgcolor: "#fff",
-          p: 3,
-          borderRadius: 2,
-          boxShadow: "0 0 10px rgba(0,0,0,0.1)",
-        }}
-      >
-        <TextField
-          label="Product Name"
-          value={productName}
-          onChange={(e) => setProductName(e.target.value)}
-          sx={{ flex: 1, minWidth: 200 }}
-        />
-        <TextField
-          label="Category"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          sx={{ flex: 1, minWidth: 200 }}
-        />
-        <TextField
-          type="number"
-          label="Price"
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
-          sx={{ flex: 1, minWidth: 200 }}
-        />
-        <TextField
-          type="number"
-          label="Stock"
-          value={stock}
-          onChange={(e) => setStock(e.target.value)}
-          sx={{ flex: 1, minWidth: 200 }}
-        />
-        <TextField
-          label="Description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          sx={{ flex: 1, minWidth: 200 }}
-        />
-        <TextField
-          label="Brand"
-          value={brand}
-          onChange={(e) => setBrand(e.target.value)}
-          sx={{ flex: 1, minWidth: 200 }}
-        />
-        <TextField
-          type="number"
-          label="Rating"
-          value={rating}
-          onChange={(e) => setRating(e.target.value)}
-          sx={{ flex: 1, minWidth: 200 }}
-        />
-
+      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, mb: 3, pt: 1 }}>
+        {fields.map((field) => (
+          <TextField
+            key={field}
+            label={field.replace("_", " ").toUpperCase()}
+            type={
+              ["price", "stock", "rating"].includes(field) ? "number" : "text"
+            }
+            value={formData[field] ?? ""}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                [field]: ["price", "stock", "rating"].includes(field)
+                  ? Number(e.target.value)
+                  : e.target.value,
+              })
+            }
+            sx={{ minWidth: 200 }}
+          />
+        ))}
         <input
           type="file"
-          onChange={(e) => setImage(e.target.files ? e.target.files[0] : null)}
-          style={{ marginTop: "10px" }}
+          onChange={(e) =>
+            setFormData({ ...formData, image: e.target.files?.[0] || null })
+          }
         />
-
-        <Button
-          variant="contained"
-          onClick={handleAddProduct}
-          sx={{ height: 40 }}
-        >
-          ADD PRODUCT
+        <Button variant="contained" onClick={handleAddProduct}>
+          Add Product
         </Button>
       </Box>
 
       {/* Products Table */}
-      <Box
-        sx={{
-          height: 650,
-          width: "100%",
-          maxWidth: "100%",
-          marginLeft: 0,
-          bgcolor: "#fff",
-          p: 2,
-          borderRadius: 2,
-          boxShadow: "0 0 10px rgba(0,0,0,0.1)",
-        }}
-      >
-        <DataGrid rows={rows} columns={columns} pageSizeOptions={[5]} />
+      <Box sx={{ height: 650, width: "100%" }}>
+        <DataGrid
+          rows={(products || []).map((p: any) => ({ id: p._id, ...p }))}
+          columns={columns}
+          pagination
+          paginationMode="server"
+          rowCount={total || 0}
+          paginationModel={{ page, pageSize }}
+          onPaginationModelChange={(model) => {
+            setPage(model.page);
+            setPageSize(model.pageSize);
+          }}
+          pageSizeOptions={[10, 20, 50]}
+        />
       </Box>
 
-      {/* Edit Product Dialog */}
-      <Dialog
-        open={editOpen}
-        onClose={() => setEditOpen(false)}
-        PaperProps={{
-          sx: {
-            width: "450px",
-            p: 2,
-            borderRadius: "12px",
-          },
-        }}
-      >
-        <DialogTitle sx={{ fontWeight: 700 }}>Edit Product</DialogTitle>
-
+      {/* Edit Dialog */}
+      <Dialog open={editOpen} onClose={() => setEditOpen(false)}>
+        <DialogTitle>Edit Product</DialogTitle>
         <DialogContent
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 2,
-            mt: 1,
-          }}
+          sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 1 }}
         >
-          <TextField
-            label="Product Name"
-            value={editingProduct?.product_name || ""}
-            onChange={(e) =>
-              setEditingProduct(
-                editingProduct
-                  ? { ...editingProduct, product_name: e.target.value }
-                  : null
-              )
-            }
-          />
-
-          <TextField
-            label="Category"
-            value={editingProduct?.category || ""}
-            onChange={(e) =>
-              setEditingProduct(
-                editingProduct
-                  ? { ...editingProduct, category: e.target.value }
-                  : null
-              )
-            }
-          />
-
-          <TextField
-            label="Price"
-            type="number"
-            value={editingProduct?.price || ""}
-            onChange={(e) =>
-              setEditingProduct(
-                editingProduct
-                  ? { ...editingProduct, price: Number(e.target.value) }
-                  : null
-              )
-            }
-          />
-
-          <TextField
-            label="Stock"
-            type="number"
-            value={editingProduct?.stock || ""}
-            onChange={(e) =>
-              setEditingProduct(
-                editingProduct
-                  ? { ...editingProduct, stock: Number(e.target.value) }
-                  : null
-              )
-            }
-          />
-
-          <TextField
-            label="Description"
-            value={editingProduct?.discription || ""}
-            onChange={(e) =>
-              setEditingProduct(
-                editingProduct
-                  ? { ...editingProduct, discription: e.target.value }
-                  : null
-              )
-            }
-          />
-
-          <TextField
-            label="Brand"
-            value={editingProduct?.brand || ""}
-            onChange={(e) =>
-              setEditingProduct(
-                editingProduct
-                  ? { ...editingProduct, brand: e.target.value }
-                  : null
-              )
-            }
-          />
-          <TextField
-            label="Rating"
-            type="number"
-            value={editingProduct?.rating || ""}
-            onChange={(e) =>
-              setEditingProduct(
-                editingProduct
-                  ? { ...editingProduct, rating: Number(e.target.value) }
-                  : null
-              )
-            }
-          />
-
-          {/* Existing Image Preview */}
-          {editingProduct?.image &&
-            typeof editingProduct.image === "string" && (
-              <Box sx={{ mt: 2 }}>
-                <Typography variant="body2" sx={{ mb: 1 }}>
-                  Current Image:
-                </Typography>
-                <img
-                  src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/${editingProduct.image}`}
-                  alt="Current product"
-                  style={{
-                    width: "120px",
-                    height: "120px",
-                    objectFit: "cover",
-                    borderRadius: "8px",
-                    border: "1px solid #ccc",
-                  }}
-                />
-              </Box>
-            )}
-
-          {/* New Image Upload */}
-          <Box sx={{ mt: 2 }}>
-            <Typography variant="body2" sx={{ mb: 1 }}>
-              Change Image:
-            </Typography>
-            <input
-              type="file"
+          {fields.map((field) => (
+            <TextField
+              key={field}
+              label={field.replace("_", " ").toUpperCase()}
+              type={
+                ["price", "stock", "rating"].includes(field) ? "number" : "text"
+              }
+              value={editingProduct?.[field] ?? ""}
               onChange={(e) =>
                 setEditingProduct(
                   editingProduct
-                    ? { ...editingProduct, image: e.target.files?.[0] || null }
+                    ? {
+                        ...editingProduct,
+                        [field]: ["price", "stock", "rating"].includes(field)
+                          ? Number(e.target.value)
+                          : e.target.value,
+                      }
                     : null
                 )
               }
             />
-          </Box>
+          ))}
+          <input
+            type="file"
+            onChange={(e) =>
+              setEditingProduct(
+                editingProduct
+                  ? { ...editingProduct, image: e.target.files?.[0] || null }
+                  : null
+              )
+            }
+          />
         </DialogContent>
-
-        <DialogActions sx={{ px: 3 }}>
+        <DialogActions>
           <Button onClick={() => setEditOpen(false)}>Cancel</Button>
-          <Button
-            onClick={handleEditSave}
-            variant="contained"
-            sx={{
-              bgcolor: "#1976d2",
-              "&:hover": { bgcolor: "#125ea8" },
-              px: 3,
-            }}
-          >
+          <Button onClick={handleEditSave} variant="contained">
             Save
           </Button>
         </DialogActions>
+      </Dialog>
+      <Dialog open={openDeleteDialog} onClose={handleCancel}>
+        <DialogTitle>Confirm Delete</DialogTitle>
+
+        <DialogContent>
+          Are you sure you want to delete this product?
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={handleCancel} color="primary">
+            Cancel
+          </Button>
+          <Button
+            onClick={handleConfirmDelete}
+            color="error"
+            variant="contained"
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        open={viewOpen}
+        onClose={() => setViewOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Product Details</DialogTitle>
+
+       <DialogContent sx={{ pt: 2 }}>
+  {viewProduct ? (
+    <Box
+      sx={{
+        display: "flex",
+        gap: 3,
+        flexDirection: { xs: "column", md: "row" }, // Responsive
+      }}
+    >
+      {/* LEFT SIDE — IMAGE */}
+      <Box sx={{ flex: 1, display: "flex", justifyContent: "center" }}>
+        {viewProduct.image && (
+          <img
+            src={
+              viewProduct.image?.startsWith("http")
+                ? viewProduct.image
+                : `http://localhost:5000/${viewProduct.image}`
+            }
+            alt="Product"
+            style={{
+              width: "100%",
+              maxWidth: 300,
+              borderRadius: 10,
+              objectFit: "cover",
+            }}
+          />
+        )}
+      </Box>
+
+      {/* RIGHT SIDE — TEXT */}
+      <Box sx={{ flex: 1, display: "flex", flexDirection: "column", gap: 1 }}>
+        <Typography><strong>Name:</strong> {viewProduct.product_name}</Typography>
+        <Typography><strong>Category:</strong> {viewProduct.category}</Typography>
+        <Typography><strong>Brand:</strong> {viewProduct.brand}</Typography>
+        <Typography><strong>Price:</strong> ₹{viewProduct.price}</Typography>
+        <Typography><strong>Stock:</strong> {viewProduct.stock}</Typography>
+        <Typography><strong>Rating:</strong> {viewProduct.rating}</Typography>
+        <Typography><strong>Description:</strong> {viewProduct.description}</Typography>
+      </Box>
+    </Box>
+  ) : (
+    <Typography>Loading...</Typography>
+  )}
+</DialogContent>
+
       </Dialog>
     </Container>
   );

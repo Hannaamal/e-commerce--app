@@ -1,5 +1,4 @@
 
-import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import FlashSales from "@/components/FlashSales";
 // import Categories from "@/components/Categories";
@@ -14,8 +13,6 @@ import NewArrival from "../components/NewArrival";
 export default function Home() {
   return (
    <>
-   
-    <Navbar />
     <NewArrival />
     <FlashSales/>
     {/* <Categories/> */}

@@ -13,37 +13,31 @@ import {
   CardMedia,
   CardContent,
 } from "@mui/material";
-import Categories from "@/components/Categories";
 import Link from "next/link";
-import Navbar from "@/components/Navbar";
-
-import { useSearchParams } from "next/navigation";
-
+import { fetchCategories } from "@/redux/categorySlice";
+import Categories from "@/components/Categories";
 
 export default function ProductsPage() {
   const dispatch = useDispatch<AppDispatch>();
-  const { products } = useSelector((state: RootState) => state.products);
+  const products = useSelector(
+    (state: RootState) => state.products.products || []
+  );
 
-  const searchParams = useSearchParams();
-  const categoryFromURL = searchParams.get("category") || "All";
+  const [page, setPage] = useState(1); // current page
+  const limit = 6; // products per page
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const categories = useSelector((state: RootState) => state.categories.list);
 
-  const [selectedCategory, setSelectedCategory] = useState(categoryFromURL);
-
-  const [page, setPage] = useState(1);
-  const limit = 6;
-
-  // 🚀 Fetch products
+  // Fetch products from Redux
   useEffect(() => {
-    dispatch(listProducts());
+    dispatch(fetchCategories());
   }, [dispatch]);
 
-  // 🚀 Sync URL category with component state
+  // Fetch products whenever category changes
   useEffect(() => {
-    setSelectedCategory(categoryFromURL);
-    setPage(1);           // reset pagination when category changes
-  }, [categoryFromURL]);
+    dispatch(listProducts(selectedCategory));
+  }, [dispatch, selectedCategory]);
 
-  // Filter products based on selected category
   const filteredProducts =
     selectedCategory === "All"
       ? products
@@ -52,19 +46,18 @@ export default function ProductsPage() {
         );
 
   // Pagination AFTER filtering
-  const total = filteredProducts.length;
+  const total = products.length;
   const totalPages = Math.ceil(total / limit);
+
   const start = (page - 1) * limit;
   const end = start + limit;
-  const paginatedProducts = filteredProducts.slice(start, end);
 
+  const paginatedProducts = products.slice(start, end);
   return (
     <Container
       className="py-16"
       sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
     >
-      {/* Navbar */}
-      <Navbar />
       {/* Page Title */}
       <Typography
         variant="h3"
@@ -73,17 +66,10 @@ export default function ProductsPage() {
       >
         Products
       </Typography>
-
-      {/* Categories */}
-      <Categories
-        onSelectCategory={(category) => {
-          setSelectedCategory(category);
-          setPage(1); // reset pagination
-        }}
-      />
+      <Categories data={categories} onSelectCategory={setSelectedCategory} />
 
       {/* Products */}
-      {filteredProducts.length === 0 ? (
+      {products.length === 0 ? (
         <Typography align="center" sx={{ py: 16 }}>
           No products found.
         </Typography>
@@ -105,7 +91,7 @@ export default function ProductsPage() {
                 <Card className="shadow-lg rounded-xl" sx={{ height: 350 }}>
                   <CardMedia
                     component="img"
-                    image={`${process.env.NEXT_PUBLIC_BACKEND_URL}/${product.image.replace(/\\/g, "/")}`}
+                    image={`${process.env.NEXT_PUBLIC_BACKEND_URL}/${product.image}`}
                     alt={product.name}
                     sx={{
                       height: 180,

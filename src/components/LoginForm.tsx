@@ -1,12 +1,8 @@
 "use client";
 
-import { useState, ChangeEvent, FormEvent } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useDispatch } from "react-redux";
-import { loginUser } from "@/redux/authSlice";
-import { AppDispatch } from "@/redux/store";
-
 import {
   TextField,
   Button,
@@ -16,38 +12,49 @@ import {
   Box,
 } from "@mui/material";
 
-interface LoginForm {
-  email: string;
-  password: string;
-}
+import { useAuth } from "@/Context/AuthContext";
 
 export default function Login() {
-  const dispatch = useDispatch<AppDispatch>();
+  const { login } = useAuth();
   const router = useRouter();
 
-  const [form, setForm] = useState<LoginForm>({ email: "", password: "" });
+  const [form, setForm] = useState({ email: "", password: "" });
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: any) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e: any) => {
+  e.preventDefault();
 
-    try {
-      const result = await dispatch(loginUser(form)).unwrap();
-
-      alert("Login successful!");
-
-      if (result.role === "admin") {
-        router.push("/admin");
-      } else {
-        router.push("/");
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/login`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+        credentials: "include",
       }
-    } catch (error: any) {
-      alert(error || "Login failed");
-    }
-  };
+    );
+
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.message);
+
+    alert("Login successful!");
+
+    // ⭐ THIS IS THE IMPORTANT LINE ⭐
+    login(data.accessToken, data.data);
+
+    // redirect based on role
+    if (data.userRole === "admin") router.push("/admin");
+    else router.push("/");
+    
+  } catch (error: any) {
+    alert(error.message || "Login failed");
+  }
+};
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100 px-4">
@@ -62,8 +69,19 @@ export default function Login() {
           </Typography>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <TextField fullWidth label="Email" name="email" onChange={handleChange} />
-            <TextField fullWidth label="Password" name="password" type="password" onChange={handleChange} />
+            <TextField
+              fullWidth
+              label="Email"
+              name="email"
+              onChange={handleChange}
+            />
+            <TextField
+              fullWidth
+              label="Password"
+              name="password"
+              type="password"
+              onChange={handleChange}
+            />
 
             <Button type="submit" variant="contained" fullWidth size="large">
               Login

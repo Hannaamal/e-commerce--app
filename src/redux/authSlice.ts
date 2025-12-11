@@ -14,11 +14,12 @@ interface AuthState {
 
 const initialState: AuthState = {
   user: null,
-  token: null,
-  role: null,
+  token: Cookies.get("auth_token") || null,
+  role: Cookies.get("role") || null,
   loading: false,
   error: null,
 };
+
 
 // ------------------------ SIGNUP API ------------------------
 export const signupUser = createAsyncThunk(

@@ -1,52 +1,78 @@
 "use client";
 
-import { useState } from "react";
+import { Box, Typography, Card, CardMedia, CardContent } from "@mui/material";
+
+type Category = {
+  _id: string;
+  title: string;
+  image: string;
+};
 
 type CategoriesProps = {
+  data: Category[];
   onSelectCategory: (category: string) => void;
 };
 
-const data = [
-  { title: "All", icon: "🛒" },
-  { title: "Beauty", icon: "💄" },
-  { title: "fragrances", icon: "🌸" },
-  { title: "Furniture", icon: "🛋️" },
-  { title: "Groceries", icon: "🛍️" }
-];
-
-export default function Categories({ onSelectCategory }: CategoriesProps) {
-  const [activeCategory, setActiveCategory] = useState<string>("All");
-
-  const handleClick = (category: string) => {
-    setActiveCategory(category);
-    onSelectCategory(category);
-  };
+export default function Categories({ data = [], onSelectCategory }: CategoriesProps) {
 
   return (
-    <div className="w-full flex justify-center mt-10">
-      <div className="max-w-7xl w-full px-4">
-        <div className="px-10 py-10">
-          <h2 className="text-2xl font-bold mb-3">📦 Browse By Category</h2>
+    <Box sx={{ width: "100%", mb: 5 }}>
+      <Typography
+        sx={{
+          fontWeight: "bold",
+          mb: 3,
+          fontSize: 20,
+          textAlign: "center",
+        }}
+      >
+        🍪 Browse By Category
+      </Typography>
 
-          <div className="flex gap-4 overflow-x-auto pb-3">
-            {data.map((c, i) => {
-              const isActive = c.title === activeCategory;
-              return (
-                <div
-                  key={i}
-                  className={`border rounded-lg px-10 py-7 text-center w-48 cursor-pointer 
-                    transition 
-                    ${isActive ? "bg-red-500 text-white" : "hover:bg-red-500 hover:text-white"}`}
-                  onClick={() => handleClick(c.title)}
-                >
-                  <div className="text-3xl">{c.icon}</div>
-                  <p className="font-medium mt-2">{c.title}</p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-    </div>
+      <Box
+        sx={{
+          display: "flex",
+          gap: 4,
+          flexWrap: "wrap",
+          justifyContent: "center",
+        }}
+      >
+        {data.map((cat) => (
+          <Card
+            key={cat._id}
+            onClick={() => onSelectCategory(cat.title)}
+            sx={{
+              width: 180,
+              height: 180,
+              cursor: "pointer",
+              borderRadius: "14px",
+              overflow: "hidden",
+              boxShadow: "0px 3px 10px rgba(0,0,0,0.15)",
+              transition: "0.25s",
+              "&:hover": {
+                transform: "translateY(-5px)",
+                boxShadow: "0px 5px 18px rgba(0,0,0,0.25)",
+              },
+            }}
+          >
+            <CardMedia
+              component="img"
+              image={`${process.env.NEXT_PUBLIC_BACKEND_URL}/${cat.image}`}
+              alt={cat.title}
+              sx={{
+                height: 120,
+                width: "100%",
+                objectFit: "cover",
+              }}
+            />
+
+            <CardContent sx={{ textAlign: "center" }}>
+              <Typography sx={{ fontSize: 16, fontWeight: 600 }}>
+                {cat.title}
+              </Typography>
+            </CardContent>
+          </Card>
+        ))}
+      </Box>
+    </Box>
   );
 }

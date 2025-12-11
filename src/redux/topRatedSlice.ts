@@ -30,7 +30,7 @@ export const fetchTopRatedProducts = createAsyncThunk(
   "products/fetchTopRated",
   async (_, { rejectWithValue }) => {
     try {
-       const res = await api.get(`/api/product/top-rated`);
+       const res = await api.get(`/api/top-rated`);
       return res.data.data; // because backend returns inside "data"
     } catch (error: any) {
       return rejectWithValue(error.response?.data || "Failed to fetch");
