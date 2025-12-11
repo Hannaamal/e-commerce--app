@@ -7,7 +7,7 @@ import Cookies from "js-cookie";
 export interface Category {
   _id: string;
   title: string;
-  image: string;
+  image: string | File ;
 }
 
 interface CategoryState {
@@ -16,7 +16,9 @@ interface CategoryState {
   error: string | null;
 }
 const getAuthToken = () =>
-  Cookies.get("auth_token") || Cookies.get("token");
+  Cookies.get("auth_token") || Cookies.get("token")
+
+
 // Fetch All
 export const fetchCategories = createAsyncThunk(
   "categories/fetch",
@@ -45,19 +47,29 @@ export const addCategory = createAsyncThunk(
 );
 
 // Update
-export const updateCategory = createAsyncThunk<Category, { id: string; data: any }>(
+export const updateCategory = createAsyncThunk(
   "categories/update",
   async ({ id, data }) => {
     const token = getAuthToken();
-    const res = await api.put(`/api/category/update/${id}`, data,{
+
+    const formData = new FormData();
+    formData.append("title", data.title);
+    
+    if (data.image instanceof File) {
+      formData.append("image", data.image);
+    }
+
+    const res = await api.put(`/api/category/update/${id}`, formData, {
       headers: {
         Authorization: `Bearer ${token}`,
-        "Content-Type": "multipart/form-data",
+        // ❌ DO NOT SET CONTENT-TYPE MANUALLY
       },
     });
+
     return res.data;
   }
 );
+
 
 // Delete
 export const deleteCategory = createAsyncThunk<string, string>(

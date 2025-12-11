@@ -66,7 +66,7 @@ export default function ProductsPage() {
       >
         Products
       </Typography>
-      <Categories data={categories} onSelectCategory={setSelectedCategory} />
+      <Categories data={categories || []} onSelectCategory={setSelectedCategory} />
 
       {/* Products */}
       {products.length === 0 ? (

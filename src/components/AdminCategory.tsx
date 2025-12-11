@@ -30,6 +30,7 @@ export default function CategoryAdminPage() {
 
   const [openAdd, setOpenAdd] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
+  const [newImage, setNewImage] = useState<File | null>(null);
   const [editData, setEditData] = useState<Category>({
     _id: "",
     title: "",
@@ -38,7 +39,7 @@ export default function CategoryAdminPage() {
 
   const [form, setForm] = useState({
     title: "",
-    image: "",
+    image: null as File | null,
   });
 
   // Load categories
@@ -49,21 +50,33 @@ export default function CategoryAdminPage() {
   // Add Category
   const handleAdd = async () => {
     if (!form.title || !form.image) return;
-    await dispatch(addCategory(form));
+    const formData = new FormData();
+    formData.append("title", form.title);
+    if (form.image) formData.append("image", form.image);
+
+    await dispatch(addCategory(formData));
     setOpenAdd(false);
-    setForm({ title: "", image: "" });
+    setForm({ title: "", image: null });
   };
 
   // Open Edit Modal
   const openEditModal = (row: Category) => {
     setEditData(row);
+    setNewImage(null); // reset
     setOpenEdit(true);
   };
 
   // Update Category
   const handleUpdate = async () => {
-    if (!editData.title || !editData.image) return;
-    await dispatch(updateCategory({ id: editData._id, data: editData }));
+    await dispatch(
+      updateCategory({
+        id: editData._id,
+        data: {
+          title: editData.title,
+          image: newImage,
+        },
+      })
+    );
     setOpenEdit(false);
   };
 
@@ -97,7 +110,10 @@ export default function CategoryAdminPage() {
             <EditIcon />
           </IconButton>
 
-          <IconButton color="error" onClick={() => handleDelete(params.row._id)}>
+          <IconButton
+            color="error"
+            onClick={() => handleDelete(params.row._id)}
+          >
             <DeleteIcon />
           </IconButton>
         </Box>
@@ -107,14 +123,18 @@ export default function CategoryAdminPage() {
 
   return (
     <Box sx={{ p: 5 }}>
-      <h1 className="text-3xl font-bold mb-5">📁 Category Management</h1>
+      <h1 className="text-3xl font-bold mb-5">Category Management</h1>
 
       <Button variant="contained" onClick={() => setOpenAdd(true)}>
         ➕ Add Category
       </Button>
 
       <Box sx={{ height: 500, mt: 3 }}>
-        <DataGrid rows={categories} columns={columns} getRowId={(row) => row._id} />
+        <DataGrid
+          rows={categories}
+          columns={columns}
+          getRowId={(row) => row._id}
+        />
       </Box>
 
       {/* ADD CATEGORY MODAL */}
@@ -128,12 +148,16 @@ export default function CategoryAdminPage() {
             value={form.title}
             onChange={(e) => setForm({ ...form, title: e.target.value })}
           />
-          <TextField
-            label="Image URL"
-            fullWidth
-            margin="normal"
-            value={form.image}
-            onChange={(e) => setForm({ ...form, image: e.target.value })}
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) =>
+              setForm({
+                ...form,
+                image: e.target.files ? e.target.files[0] : null,
+              })
+            }
+            style={{ marginTop: "20px" }}
           />
         </DialogContent>
 
@@ -154,14 +178,29 @@ export default function CategoryAdminPage() {
             fullWidth
             margin="normal"
             value={editData.title}
-            onChange={(e) => setEditData({ ...editData, title: e.target.value })}
+            onChange={(e) =>
+              setEditData({ ...editData, title: e.target.value })
+            }
           />
-          <TextField
-            label="Image URL"
-            fullWidth
-            margin="normal"
-            value={editData.image}
-            onChange={(e) => setEditData({ ...editData, image: e.target.value })}
+          <img
+            src={
+              newImage
+                ? URL.createObjectURL(newImage)
+                : `${process.env.NEXT_PUBLIC_BACKEND_URL}/${editData.image}`
+            }
+            style={{ width: 80, height: 80, borderRadius: 8, marginTop: 10 }}
+          />
+          {/* Choose New Image */}
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => {
+              if (e.target.files && e.target.files[0]) {
+                const file = e.target.files[0];
+                setNewImage(file); // <<< YOU FORGOT THIS!!
+                setEditData({ ...editData, image: file });
+              }
+            }}
           />
         </DialogContent>
 
