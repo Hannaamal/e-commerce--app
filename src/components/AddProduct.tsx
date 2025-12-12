@@ -56,6 +56,12 @@ export default function ProductsPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [viewOpen, setViewOpen] = useState(false);
   const [viewProduct, setViewProduct] = useState<any>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterCategory, setFilterCategory] = useState("");
+  const [filterPriceRange, setFilterPriceRange] = useState<{
+    min?: number;
+    max?: number;
+  }>({});
 
   // Form state
   const [formData, setFormData] = useState<
@@ -107,15 +113,15 @@ export default function ProductsPage() {
 
   const [categories, setCategories] = useState<any[]>([]);
 
- useEffect(() => {
-  fetch("http://localhost:5000/api/category/list")
-    .then((res) => res.json())
-    .then((data) => {
-      console.log("CATEGORY API RESPONSE", data);  // <-- tell me this output
-      setCategories(data.data || data);           // AUTO FIX
-    })
-    .catch((err) => console.error("Category Fetch Error:", err));
-}, []);
+  useEffect(() => {
+    fetch("http://localhost:5000/api/category/list")
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("CATEGORY API RESPONSE", data); // <-- tell me this output
+        setCategories(data.data || data); // AUTO FIX
+      })
+      .catch((err) => console.error("Category Fetch Error:", err));
+  }, []);
 
   // Add Product
   const handleAddProduct = () => {
@@ -249,7 +255,7 @@ export default function ProductsPage() {
       </Typography>
 
       {/* Add Product Form */}
-      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, mb: 3, pt: 1 }}>
+      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, mb: 4, pt: 1 }}>
         {fields.map((field) => (
           <TextField
             key={field}
@@ -303,6 +309,94 @@ export default function ProductsPage() {
           Add Product
         </Button>
       </Box>
+
+      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, mb: 4 }}>
+  {/* Search by Name */}
+  <TextField
+    label="Search by Name"
+    value={searchTerm}
+    onChange={(e) => setSearchTerm(e.target.value)}
+    sx={{ minWidth: 200 }}
+  />
+
+  {/* Category Filter */}
+  <TextField
+    select
+    label="Category"
+    value={filterCategory}
+    onChange={(e) => setFilterCategory(e.target.value)}
+    SelectProps={{ native: true }}
+    sx={{ minWidth: 200 }}
+  >
+    <option value="">All Categories</option>
+    {categories.map((cat: any) => (
+      <option key={cat._id} value={cat.title}>
+        {cat.title}
+      </option>
+    ))}
+  </TextField>
+
+  {/* Min Price */}
+  <TextField
+    label="Min Price"
+    type="number"
+    value={filterPriceRange.min ?? ""}
+    onChange={(e) =>
+      setFilterPriceRange({
+        ...filterPriceRange,
+        min: e.target.value === "" ? undefined : Number(e.target.value),
+      })
+    }
+    sx={{ minWidth: 100 }}
+  />
+
+  {/* Max Price */}
+  <TextField
+    label="Max Price"
+    type="number"
+    value={filterPriceRange.max ?? ""}
+    onChange={(e) =>
+      setFilterPriceRange({
+        ...filterPriceRange,
+        max: e.target.value === "" ? undefined : Number(e.target.value),
+      })
+    }
+    sx={{ minWidth: 100 }}
+  />
+
+  {/* Apply Filters */}
+  <Button
+    variant="contained"
+    onClick={() =>
+      dispatch(
+        listProducts({
+          skip: page * pageSize,
+          limit: pageSize,
+          Search: searchTerm,
+          category: filterCategory,
+          minPrice: filterPriceRange.min,
+          maxPrice: filterPriceRange.max,
+        })
+      )
+    }
+  >
+    Apply
+  </Button>
+
+  {/* Reset Filters */}
+  <Button
+    variant="outlined"
+    onClick={() => {
+      setSearchTerm("");
+      setFilterCategory("");
+      setFilterPriceRange({});
+      dispatch(listProducts({ skip: page * pageSize, limit: pageSize }));
+    }}
+  >
+    Reset
+  </Button>
+</Box>
+
 
       {/* Products Table */}
       <Box sx={{ height: 650, width: "100%" }}>

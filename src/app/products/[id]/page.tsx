@@ -33,6 +33,7 @@ export default function ViewProductPage() {
   
   const wishlistItems = useSelector((state: any) => state.wishlist.items);
 
+
   const { product, loading } = useSelector(
     (state: RootState) => state.products
   );
@@ -70,23 +71,25 @@ export default function ViewProductPage() {
   // ❤️ Wishlist Toggle (no changes)
 
   const handleWishlist = () => {
-    if (!product?._id) return;
+  if (!product?._id) return;
 
-    if (isWishlisted) {
-      const item = wishlistItems.find(
-        (i: any) => String(i.product_id) === String(product._id)
-      );
+  if (isWishlisted) {
+    // FIX: compare with i.product_id._id
+    const item = wishlistItems.find(
+      (i: any) => String(i.product_id?._id) === String(product._id)
+    );
 
-      if (item) {
-        dispatch(removeWishlist(item._id));
-      }
-
-      setIsWishlisted(false);
-    } else {
-      dispatch(addWishlist(product._id));
-      setIsWishlisted(true);
+    if (item) {
+      dispatch(removeWishlist(item._id));
     }
-  };
+
+    setIsWishlisted(false);
+  } else {
+    dispatch(addWishlist(product._id));
+    setIsWishlisted(true);
+  }
+};
+
 
   // 🛒 Add to Cart (no changes)
 

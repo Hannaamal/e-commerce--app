@@ -14,6 +14,7 @@ import { useRouter } from "next/navigation";
 
 export default function CartPage() {
   const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter();
   const { items: cartItems, loading } = useSelector(
     (state: RootState) => state.cart
   );
@@ -33,10 +34,10 @@ export default function CartPage() {
   );
 
   if (loading) return <p className="text-center mt-10">Loading cart...</p>;
-  const router = useRouter();
 
   const handleCheckout = () => {
     if (validCartItems.length > 0) {
+      console.log("Checkout clicked"); 
       router.push("/checkout"); // navigate to checkout
     }
   };

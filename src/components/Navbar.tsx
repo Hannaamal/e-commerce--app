@@ -11,6 +11,7 @@ import NavbarProfileDropdown from "./NavbarProfileDropdown";
 import { useEffect, useState } from "react";
 
 import { useAuth } from "@/Context/AuthContext"; // ✅ using auth context
+import { fetchWishlist } from "@/redux/wishlistSlice";
 
 export default function Navbar() {
   const dispatch = useDispatch<AppDispatch>();
@@ -22,16 +23,18 @@ export default function Navbar() {
 
   const { items: cartItems } = useSelector((state: RootState) => state.cart);
   const cartCount = cartItems?.length || 0;
+   const { items: wishlistItems } = useSelector((state: RootState) => state.wishlist);
+    const wishlistCount = wishlistItems?.length || 0;
+ 
 
-  const [wishlistCount, setWishlistCount] = useState(0);
 
   // Load wishlist from localStorage safely
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const list = JSON.parse(localStorage.getItem("wishlist") || "[]");
-      setWishlistCount(list.length);
+    if (loggedIn) {
+      dispatch(fetchCartItems());
+      dispatch(fetchWishlist());
     }
-  }, []);
+  }, [loggedIn,  dispatch]);
 
   const handleCartOpen = async () => {
     if (loggedIn) {

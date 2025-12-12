@@ -43,24 +43,29 @@ const initialState: WishlistState = {
 // ⭐ ADD WISHLIST
 // ------------------------------
 
-export const addWishlist = createAsyncThunk<
-  any, // returned data
-  string // argument product_id
->("wishlist/add", async (product_id, thunkAPI) => {
-  const token = Cookies.get("auth_token");
+export const addWishlist = createAsyncThunk(
+  "wishlist/add",
+  async (product_id, thunkAPI) => {
+    const token = Cookies.get("auth_token");
 
-  try {
-    const res = await api.post(
-      "/api/wishlist/add",
-      { product_id },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+    try {
+      await api.post(
+        "/api/wishlist/add",
+        { product_id },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-    return res.data.wishItem;
-  } catch (error: any) {
-    return thunkAPI.rejectWithValue(error.response?.data || error.message);
+      const res = await api.get("/api/wishlist/list", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      return res.data; // send full populated list
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.response?.data || error.message);
+    }
   }
-});
+);
+
 
 // ------------------------------
 // ⭐ FETCH WISHLIST
@@ -123,8 +128,10 @@ const wishlistSlice = createSlice({
           name: w.product_id?.product_name,
           price: w.product_id?.price,
           brand: w.product_id?.brand,
-          image: w.product_id?.image,
-        }));
+           image: w.product_id?.image
+      ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/${w.product_id.image.replace(/\\/g, "/")}`
+      : "/placeholder.png",
+  }));
       }
     );
 

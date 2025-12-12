@@ -31,17 +31,32 @@ const initialState: ProductState = {
 //  List all products
 export const listProducts = createAsyncThunk(
   "admin/listProducts",
-  async (params: { skip?: number; limit?: number } = {}) => {
-    const { skip = 0, limit = 10 } = params;
+  async (params: {
+    skip?: number;
+    limit?: number;
+    search?: string;
+    category?: string;
+    minPrice?: number;
+    maxPrice?: number;
+  } = {}) => {
+    const { skip = 0, limit = 10, search, category, minPrice, maxPrice } = params;
 
-    const { data } = await api.get(
-      `/api/products?skip=${skip}&limit=${limit}`
-    );
+    const query = new URLSearchParams();
+    query.append("skip", skip.toString());
+    query.append("limit", limit.toString());
 
-    console.log(data);
-    return data;
+    if (search) query.append("search", search);
+    if (category) query.append("category", category);
+    if (minPrice !== undefined) query.append("minPrice", minPrice.toString());
+    if (maxPrice !== undefined) query.append("maxPrice", maxPrice.toString());
+
+    const { data } = await api.get(`/api/products?${query.toString()}`);
+
+    console.log("Filtered Products Data:", data);
+    return data; // should return { products, total } from backend
   }
 );
+
 
 
 //  Get single product
