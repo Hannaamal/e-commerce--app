@@ -9,6 +9,8 @@ import wishlistReducer from "./wishlistSlice";
 import checkoutReducer from "./checkoutSlice";
 import categoryReducer from "./categorySlice";
 import adminproductReducer from "./adminSlice";
+import profileReducer from "./profileSlice";
+
 
 export const store = configureStore({
   reducer: {
@@ -22,6 +24,7 @@ export const store = configureStore({
     wishlist: wishlistReducer,
     checkout: checkoutReducer,
     categories: categoryReducer,
+    profile: profileReducer,
   },
 });
 

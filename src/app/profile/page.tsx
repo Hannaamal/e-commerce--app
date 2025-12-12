@@ -1,106 +1,146 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/redux/store";
 import {
-  Container,
+  fetchProfile,
+  updateProfile,
+  updateProfileImage,
+} from "@/redux/profileSlice";
+import { useRouter } from "next/navigation";
+
+import {
   Box,
   Typography,
-  Avatar,
   TextField,
   Button,
-  Paper,
+  Avatar,
+  CircularProgress,
 } from "@mui/material";
+import toast from "react-hot-toast";
 
-export default function ProfilePage() {
-  // Example user data (replace with your backend/fetch)
-  const [user, setUser] = useState({
-    name: "John Doe",
-    email: "john@example.com",
-    phone: "123-456-7890",
-    address: "123 Main St, City, Country",
-    avatar: "https://i.pravatar.cc/150?img=3",
-  });
+export default function EditProfile() {
+  const dispatch = useDispatch<AppDispatch>();
 
-  const [editMode, setEditMode] = useState(false);
+  const { user, loading } = useSelector((state: RootState) => state.profile);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setUser({ ...user, [e.target.name]: e.target.value });
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+
+  // Load profile
+  useEffect(() => {
+    dispatch(fetchProfile());
+  }, [dispatch]);
+
+  // Set form values when user loads
+  useEffect(() => {
+    if (user) {
+      console.log(user);
+      setName(user.name || "");
+      setPhone(user.phone || "");
+    }
+  }, [user]);
+
+  const router = useRouter();
+
+  // Update profile handler
+  const handleSave = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  try {
+    await dispatch(updateProfile({ name, phone })).unwrap();
+    toast.success("Profile updated");
+
+    router.push("/");  // ⬅ Redirect to Home Page
+  } catch (err) {
+    toast.error("Update failed");
+  }
+};
+
+  // Upload image handler
+  const handleImageUpload = (e: any) => {
+    const file = e.target.files[0];
+    if (file) dispatch(updateProfileImage(file));
   };
 
-  const handleSave = () => {
-    // Here you can send updated data to your backend
-    console.log("Updated User:", user);
-    setEditMode(false);
-  };
+  if (loading || !user)
+    return (
+      <Box p={4} display="flex" justifyContent="center">
+        <CircularProgress />
+      </Box>
+    );
 
   return (
-    <Container maxWidth="sm" sx={{ py: 10 }}>
-      <Paper elevation={3} sx={{ p: 4, borderRadius: 3 }}>
-        <Box display="flex" flexDirection="column" alignItems="center" mb={4}>
-          <Avatar
-            src={user.avatar}
-            alt={user.name}
-            sx={{ width: 100, height: 100, mb: 2 }}
-          />
-          <Typography variant="h5" fontWeight="bold">
-            {user.name}
-          </Typography>
-          <Typography color="textSecondary">{user.email}</Typography>
-        </Box>
+    <Box
+      maxWidth="500px"
+      mx="auto"
+      mt={5}
+      p={3}
+      border="1px solid #ddd"
+      borderRadius="12px"
+      boxShadow="0 2px 10px rgba(0,0,0,0.1)"
+    >
+      <Typography variant="h5" fontWeight="bold" mb={3}>
+        Edit Profile
+      </Typography>
 
-        <Box display="flex" flexDirection="column" gap={2}>
-          <TextField
-            label="Name"
-            name="name"
-            value={user.name}
-            onChange={handleChange}
-            disabled={!editMode}
-            fullWidth
+      {/* Avatar Image */}
+      <Box textAlign="center" mb={3}>
+        <Avatar
+          src={
+            user?.image
+              ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/${user.image}`
+              : `${process.env.NEXT_PUBLIC_BACKEND_URL}/uploads/default.png`
+          }
+          sx={{ width: 100, height: 100, margin: "0 auto" }}
+        />
+        <Button variant="contained" component="label" sx={{ mt: 2 }}>
+          Upload Image
+          <input
+            type="file"
+            hidden
+            accept="image/*"
+            onChange={handleImageUpload}
           />
-          <TextField
-            label="Email"
-            name="email"
-            value={user.email}
-            onChange={handleChange}
-            disabled={!editMode}
-            fullWidth
-          />
-          <TextField
-            label="Phone"
-            name="phone"
-            value={user.phone}
-            onChange={handleChange}
-            disabled={!editMode}
-            fullWidth
-          />
-          <TextField
-            label="Address"
-            name="address"
-            value={user.address}
-            onChange={handleChange}
-            disabled={!editMode}
-            fullWidth
-          />
-        </Box>
+        </Button>
+      </Box>
 
-        <Box mt={4} display="flex" justifyContent="center" gap={2}>
-          {editMode ? (
-            <>
-              <Button variant="contained" onClick={handleSave}>
-                Save
-              </Button>
-              <Button variant="outlined" onClick={() => setEditMode(false)}>
-                Cancel
-              </Button>
-            </>
-          ) : (
-            <Button variant="contained" onClick={() => setEditMode(true)}>
-              Edit Profile
-            </Button>
-          )}
-        </Box>
-      </Paper>
-    </Container>
+      {/* Name */}
+      <TextField
+        label="Name"
+        fullWidth
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        sx={{ mb: 2 }}
+      />
+
+      {/* Email (read-only) */}
+      <TextField
+        label="Email"
+        fullWidth
+        value={user.email}
+        disabled
+        sx={{ mb: 2 }}
+      />
+
+      {/* Phone */}
+      <TextField
+        label="Phone"
+        fullWidth
+        value={phone}
+        onChange={(e) => setPhone(e.target.value)}
+        sx={{ mb: 2 }}
+      />
+
+      <Button
+        variant="contained"
+        color="primary"
+        fullWidth
+        onClick={handleSave}
+      >
+        Save Changes
+      </Button>
+    </Box>
   );
 }
-

@@ -4,6 +4,7 @@ import "./globals.css";
 import ReduxProvider from "@/components/ReduxProvider";
 import NavbarWrapper from "@/components/NavbarWrapper";
 import { AuthProvider } from "@/Context/AuthContext";
+import { Toaster } from "react-hot-toast";
 
 
 export const metadata: Metadata = {
@@ -25,6 +26,7 @@ export default function RootLayout({
           <AuthProvider>
             <NavbarWrapper />          {/* ⬅️ show navbar on all pages */}
           <main>{children}</main>
+          <Toaster position="top-right" />
           </AuthProvider>
         </ReduxProvider>
 
