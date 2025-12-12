@@ -9,15 +9,21 @@ import { logoutUser } from "@/redux/authSlice";
 
 export default function NavbarProfileDropdown() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [avatarLetter, setAvatarLetter] = useState("S");
+  const [avatarLetter, setAvatarLetter] = useState<string | null>(null);
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
 
   const { user } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
-    if (user?.name) setAvatarLetter(user.name.charAt(0).toUpperCase());
+    if (user?.name && user.name.length > 0) {
+      setAvatarLetter(user.name.charAt(0).toUpperCase());
+    } else {
+      setAvatarLetter(null); // no avatar until user loaded
+    }
   }, [user]);
+
+  
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
@@ -36,7 +42,7 @@ export default function NavbarProfileDropdown() {
   return (
     <>
       <IconButton onClick={handleClick} size="large">
-        <Avatar>{avatarLetter}</Avatar>
+       <Avatar>{avatarLetter}</Avatar>
       </IconButton>
 
       <Menu
