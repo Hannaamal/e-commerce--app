@@ -32,6 +32,10 @@ export default function NavbarProfileDropdown() {
     handleClose();
     router.push("/profile");
   };
+  const goToMyOrders = () => {
+    handleClose();
+    router.push("/my-orders");
+  }
 
   const handleLogout = async () => {
     await dispatch(logoutUser());
@@ -53,6 +57,7 @@ export default function NavbarProfileDropdown() {
         transformOrigin={{ vertical: "top", horizontal: "right" }}
       >
         <MenuItem onClick={goToProfile}>Profile</MenuItem>
+        <MenuItem onClick={goToMyOrders}>My Orders</MenuItem>
         <MenuItem onClick={handleLogout}>Logout</MenuItem>
       </Menu>
     </>

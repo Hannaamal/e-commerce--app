@@ -10,6 +10,7 @@ import checkoutReducer from "./checkoutSlice";
 import categoryReducer from "./categorySlice";
 import adminproductReducer from "./adminSlice";
 import profileReducer from "./profileSlice";
+import orderReducer from "./orderSlice";
 
 
 export const store = configureStore({
@@ -25,6 +26,7 @@ export const store = configureStore({
     checkout: checkoutReducer,
     categories: categoryReducer,
     profile: profileReducer,
+     order: orderReducer,
   },
 });
 

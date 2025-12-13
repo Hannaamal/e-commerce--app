@@ -88,7 +88,6 @@ export default function ProductsPage() {
     "rating",
     "description",
     "brand",
-    "image",
   ];
 
   useEffect(() => {
@@ -125,12 +124,27 @@ export default function ProductsPage() {
 
   // Add Product
   const handleAddProduct = () => {
+    if (
+      !formData.product_name ||
+      !formData.price ||
+      !formData.stock ||
+      !formData.category
+    ) {
+      alert("Please fill all required fields");
+      return;
+    }
+
     const fd = new FormData();
+
     fields.forEach((field) => {
       if (formData[field] !== null && formData[field] !== undefined) {
-        fd.append(field, formData[field]!.toString());
+        fd.append(field, String(formData[field]));
       }
     });
+
+    // 🔥 Add category manually as its _id
+    fd.append("category", formData.category);
+
     if (formData.image) fd.append("image", formData.image);
 
     dispatch(addProduct(fd))
@@ -146,6 +160,7 @@ export default function ProductsPage() {
       rating: 0,
       description: "",
       brand: "",
+      category: "",
       image: null,
     });
   };
@@ -186,15 +201,28 @@ export default function ProductsPage() {
     if (!editingProduct) return;
 
     const fd = new FormData();
-    fields.forEach((field) => {
-      const value = editingProduct[field];
-      if (value !== null && value !== undefined)
-        fd.append(field, value.toString());
-    });
-    if (editingProduct.image instanceof File)
-      fd.append("image", editingProduct.image);
 
-    dispatch(editProduct({ id: editingProduct.id, productData: fd }))
+    // Use editingProduct, not formData
+    fields.forEach((field) => {
+      if (
+        editingProduct[field] !== undefined &&
+        editingProduct[field] !== null
+      ) {
+        fd.append(field, String(editingProduct[field]));
+      }
+    });
+
+    // Append category
+    if (editingProduct?.category) {
+      fd.append("category", editingProduct.category);
+    }
+
+    // Append image if exists
+    if (editingProduct.image instanceof File) {
+      fd.append("image", editingProduct.image);
+    }
+
+    dispatch(editProduct({ id: (editingProduct as any)._id, productData: fd }))
       .unwrap()
       .then(() =>
         dispatch(listProducts({ skip: page * pageSize, limit: pageSize }))
@@ -228,8 +256,13 @@ export default function ProductsPage() {
           <Button
             variant="text"
             size="small"
-            onClick={() => {
-              setEditingProduct(params.row);
+            onClick={async () => {
+              // Fetch full product from backend
+              const res = await fetch(
+                `http://localhost:5000/api/product/${params.row.id}`
+              );
+              const data = await res.json();
+              setEditingProduct(data.data || data); // now it has all fields
               setEditOpen(true);
             }}
           >
@@ -275,12 +308,18 @@ export default function ProductsPage() {
             sx={{ minWidth: 200 }}
           />
         ))}
+
         <input
           type="file"
+          accept="image/*"
           onChange={(e) =>
-            setFormData({ ...formData, image: e.target.files?.[0] || null })
+            setFormData({
+              ...formData,
+              image: e.target.files?.[0] || null,
+            })
           }
         />
+
         {/* CATEGORY DROPDOWN */}
         <select
           style={{
@@ -300,7 +339,7 @@ export default function ProductsPage() {
         >
           <option value="">Select Category</option>
           {categories.map((cat: any) => (
-            <option key={cat._id} value={cat.title}>
+            <option key={cat._id} value={cat._id}>
               {cat.title}
             </option>
           ))}
@@ -311,97 +350,99 @@ export default function ProductsPage() {
       </Box>
 
       <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, mb: 4 }}>
-  {/* Search by Name */}
-  <TextField
-    label="Search by Name"
-    value={searchTerm}
-    onChange={(e) => setSearchTerm(e.target.value)}
-    sx={{ minWidth: 200 }}
-  />
+        {/* Search by Name */}
+        <TextField
+          label="Search by Name"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          sx={{ minWidth: 200 }}
+        />
 
-  {/* Category Filter */}
-  <TextField
-    select
-    label="Category"
-    value={filterCategory}
-    onChange={(e) => setFilterCategory(e.target.value)}
-    SelectProps={{ native: true }}
-    sx={{ minWidth: 200 }}
-  >
-    <option value="">All Categories</option>
-    {categories.map((cat: any) => (
-      <option key={cat._id} value={cat.title}>
-        {cat.title}
-      </option>
-    ))}
-  </TextField>
+        {/* Category Filter */}
+        <TextField
+          select
+          label="Category"
+          value={filterCategory}
+          onChange={(e) => setFilterCategory(e.target.value)}
+          SelectProps={{ native: true }}
+          sx={{ minWidth: 200 }}
+        >
+          <option value="">All Categories</option>
+          {categories.map((cat: any) => (
+            <option key={cat._id} value={cat._id}>
+              {cat.title}
+            </option>
+          ))}
+        </TextField>
 
-  {/* Min Price */}
-  <TextField
-    label="Min Price"
-    type="number"
-    value={filterPriceRange.min ?? ""}
-    onChange={(e) =>
-      setFilterPriceRange({
-        ...filterPriceRange,
-        min: e.target.value === "" ? undefined : Number(e.target.value),
-      })
-    }
-    sx={{ minWidth: 100 }}
-  />
+        {/* Min Price
+        <TextField
+          label="Min Price"
+          type="number"
+          value={filterPriceRange.min ?? ""}
+          onChange={(e) =>
+            setFilterPriceRange({
+              ...filterPriceRange,
+              min: e.target.value === "" ? undefined : Number(e.target.value),
+            })
+          }
+          sx={{ minWidth: 100 }}
+        /> */}
 
-  {/* Max Price */}
-  <TextField
-    label="Max Price"
-    type="number"
-    value={filterPriceRange.max ?? ""}
-    onChange={(e) =>
-      setFilterPriceRange({
-        ...filterPriceRange,
-        max: e.target.value === "" ? undefined : Number(e.target.value),
-      })
-    }
-    sx={{ minWidth: 100 }}
-  />
+        {/* Max Price
+        <TextField
+          label="Max Price"
+          type="number"
+          value={filterPriceRange.max ?? ""}
+          onChange={(e) =>
+            setFilterPriceRange({
+              ...filterPriceRange,
+              max: e.target.value === "" ? undefined : Number(e.target.value),
+            })
+          }
+          sx={{ minWidth: 100 }}
+        /> */}
 
-  {/* Apply Filters */}
-  <Button
-    variant="contained"
-    onClick={() =>
-      dispatch(
-        listProducts({
-          skip: page * pageSize,
-          limit: pageSize,
-          Search: searchTerm,
-          category: filterCategory,
-          minPrice: filterPriceRange.min,
-          maxPrice: filterPriceRange.max,
-        })
-      )
-    }
-  >
-    Apply
-  </Button>
-
-  {/* Reset Filters */}
-  <Button
-    variant="outlined"
-    onClick={() => {
-      setSearchTerm("");
-      setFilterCategory("");
-      setFilterPriceRange({});
-      dispatch(listProducts({ skip: page * pageSize, limit: pageSize }));
-    }}
-  >
-    Reset
-  </Button>
-</Box>
-
+        {/* Apply Filters */}
+        <Button
+          variant="contained"
+          onClick={() =>
+            dispatch(
+              listProducts({
+                skip: page * pageSize,
+                limit: pageSize,
+                q: searchTerm,
+                category: filterCategory,
+              })
+            )
+          }
+        >
+          Apply
+        </Button>
+        {/* Reset Filters */}
+        <Button
+          variant="outlined"
+          onClick={() => {
+            setSearchTerm("");
+            setFilterCategory("");
+            dispatch(listProducts({ skip: page * pageSize, limit: pageSize }));
+          }}
+        >
+          Reset
+        </Button>
+      </Box>
 
       {/* Products Table */}
       <Box sx={{ height: 650, width: "100%" }}>
         <DataGrid
-          rows={(products || []).map((p: any) => ({ id: p._id, ...p }))}
+          rows={(products || []).map((p: any) => {
+            const categoryObj = categories.find((c) => c._id === p.category);
+            return {
+              id: p._id,
+              ...p,
+              category: categoryObj ? categoryObj.title : "Unknown", // show name instead of ID
+            };
+          })}
           columns={columns}
           pagination
           paginationMode="server"
@@ -443,6 +484,53 @@ export default function ProductsPage() {
               }
             />
           ))}
+          {/* CATEGORY DROPDOWN */}
+          <select
+            style={{
+              minWidth: 200,
+              height: 55,
+              padding: "10px",
+              borderRadius: 5,
+              border: "1px solid #ccc",
+            }}
+            value={editingProduct?.category || ""}
+            onChange={(e) =>
+              setEditingProduct(
+                editingProduct
+                  ? { ...editingProduct, category: e.target.value }
+                  : null
+              )
+            }
+          >
+            <option value="">Select Category</option>
+            {categories.map((cat: any) => (
+              <option key={cat._id} value={cat._id}>
+                {cat.title}
+              </option>
+            ))}
+          </select>
+          {/* CURRENT IMAGE */}
+          {editingProduct?.image &&
+            typeof editingProduct.image === "string" && (
+              <Box sx={{ mt: 1 }}>
+                <Typography variant="body2">Current Image:</Typography>
+                <img
+                  src={
+                    editingProduct.image.startsWith("http")
+                      ? editingProduct.image
+                      : `http://localhost:5000/${editingProduct.image}`
+                  }
+                  alt="Current Product"
+                  style={{
+                    width: 150,
+                    borderRadius: 5,
+                    objectFit: "cover",
+                    marginTop: 5,
+                  }}
+                />
+              </Box>
+            )}
+
           <input
             type="file"
             onChange={(e) =>
