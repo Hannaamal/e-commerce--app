@@ -33,14 +33,14 @@ export default function UserList() {
   };
 
   const handleToggleStatus = (user: User) => {
-    const newStatus = user.status === "Active" ? "Inactive" : "Active";
-    dispatch(toggleUserStatus({ id: user._id, status: newStatus }))
-  .unwrap()
-  .then(() => dispatch(fetchUsers()));
-  };
+  const newStatus = user.status === "Active" ? "Inactive" : "Active";
+  dispatch(toggleUserStatus({ id: user._id, status: newStatus }))
+    .unwrap()
+    .then(() => dispatch(fetchUsers()))
+    .catch(err => console.error("Error updating user status:", err));
+};
 
   const columns: GridColDef[] = [
-    { field: "_id", headerName: "ID", width: 150 },
     { field: "name", headerName: "Name", width: 200 },
     { field: "email", headerName: "Email", width: 250 },
     { field: "role", headerName: "Role", width: 150 },

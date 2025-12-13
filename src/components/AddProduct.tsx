@@ -90,9 +90,21 @@ export default function ProductsPage() {
     "brand",
   ];
 
+  const [appliedFilters, setAppliedFilters] = useState({
+    q: "",
+    category: "",
+  });
+
   useEffect(() => {
-    dispatch(listProducts({ skip: page * pageSize, limit: pageSize }));
-  }, [dispatch, page, pageSize]);
+    dispatch(
+      listProducts({
+        skip: page * pageSize,
+        limit: pageSize,
+        q: appliedFilters.q.trim(),
+        category: appliedFilters.category || "All",
+      })
+    );
+  }, [dispatch, page, pageSize, appliedFilters]);
 
   const handleView = async (id: string) => {
     try {
@@ -406,19 +418,29 @@ export default function ProductsPage() {
         {/* Apply Filters */}
         <Button
           variant="contained"
-          onClick={() =>
+          onClick={() => {
+            const filters: { q?: string; category?: string } = {};
+
+            if (searchTerm.trim() !== "") filters.q = searchTerm.trim();
+            if (filterCategory && filterCategory !== "")
+              filters.category = filterCategory;
+
+            setAppliedFilters(filters);
+
             dispatch(
               listProducts({
-                skip: page * pageSize,
+                skip: 0,
                 limit: pageSize,
-                q: searchTerm,
-                category: filterCategory,
+                ...filters,
               })
-            )
-          }
+            );
+
+            setPage(0); // Reset pagination
+          }}
         >
           Apply
         </Button>
+
         {/* Reset Filters */}
         <Button
           variant="outlined"

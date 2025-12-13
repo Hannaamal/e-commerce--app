@@ -76,7 +76,7 @@ const userSlice = createSlice({
 
       // Toggle status
      .addCase(toggleUserStatus.fulfilled, (state, action) => {
-  const { id, status } = action.payload;
+  const { id, status } = action.payload.user;
 
   const userIndex = state.users.findIndex((u) => u._id === id);
   if (userIndex !== -1) {
