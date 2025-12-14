@@ -1,4 +1,11 @@
-import { Card, CardContent, Typography, Box, Avatar, Stack } from "@mui/material";
+import {
+  Card,
+  CardContent,
+  Typography,
+  Box,
+  Avatar,
+  Stack,
+} from "@mui/material";
 
 interface Product {
   id: string | number;
@@ -12,7 +19,9 @@ interface TopSellingProductsProps {
   products: Product[];
 }
 
-export default function TopSellingProducts({ products }: TopSellingProductsProps) {
+export default function TopSellingProducts({
+  products,
+}: TopSellingProductsProps) {
   return (
     <Card sx={{ boxShadow: 3, p: 2 }}>
       <CardContent>
@@ -38,9 +47,22 @@ export default function TopSellingProducts({ products }: TopSellingProductsProps
                 }}
               >
                 <Stack direction="row" spacing={2} alignItems="center">
-                  <Avatar src={p.image} alt={p.name} variant="rounded" sx={{ width: 48, height: 48 }} />
+                  <Avatar
+                    src={
+                      p.image
+                        ? p.image.startsWith("http")
+                          ? p.image
+                          : `http://localhost:5000/${p.image}` // prepend backend URL
+                        : "" // fallback if no image
+                    }
+                    alt={p.name}
+                    variant="rounded"
+                    sx={{ width: 48, height: 48 }}
+                  />
                   <Box>
-                    <Typography sx={{ fontWeight: "bold" }}>{p.name}</Typography>
+                    <Typography sx={{ fontWeight: "bold" }}>
+                      {p.name}
+                    </Typography>
                     <Typography color="text.secondary" variant="body2">
                       ${p.price}
                     </Typography>

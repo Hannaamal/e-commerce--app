@@ -1,6 +1,6 @@
 "use client";
 
-import { useState,useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Box, Typography, Stack } from "@mui/material";
 
 import api from "@/lib/api";
@@ -8,14 +8,17 @@ import api from "@/lib/api";
 import StatCard from "@/components/StatCard";
 import RevenueChart from "@/components/RevenueChart";
 import TopSellingProducts from "@/components/TopSellingProducts";
-import SatisfactionPie from "@/components/SatisfactionPie";
+import { PieChart } from "recharts";
+import DashboardPieChart from "./PiaChart";
 
 export default function AdminDashboard() {
   const [products] = useState<any[]>([]);
   const [totalProducts, setTotalProducts] = useState(0);
   const [totalStock, setTotalStock] = useState(0);
-   const [topSelling, setTopSelling] = useState<any[]>([]);
-   const[totalOrder,setTotalOrders]=useState(0);
+  const [topSelling, setTopSelling] = useState<any[]>([]);
+  const [totalOrder, setTotalOrders] = useState(0);
+   const [totalUsers, setTotalUsers] = useState(0);
+
 
   useEffect(() => {
     const fetchTotalProducts = async () => {
@@ -28,7 +31,7 @@ export default function AdminDashboard() {
     };
     fetchTotalProducts();
   }, []);
-   useEffect(() => {
+  useEffect(() => {
     const fetchTotalStock = async () => {
       try {
         const res = await api.get("/api/total-stock");
@@ -41,113 +44,100 @@ export default function AdminDashboard() {
     fetchTotalStock();
   }, []);
 
-useEffect(() => {
-  const fetchTotalOrders = async () => {
+
+  useEffect(() => {
+  const fetchTotals = async () => {
     try {
-      const res = await api.get("/api/total-orders");
-      setTotalOrders(res.data.totalOrders);
+      const usersRes = await api.get("/api/users/total");
+      setTotalUsers(usersRes.data.totalUsers);
+
+      const ordersRes = await api.get("/api/orders/total");
+      setTotalOrders(ordersRes.data.totalOrders);
     } catch (err) {
-      console.error("Error fetching total orders:", err);
+      console.error("Error fetching totals:", err);
     }
   };
 
-  fetchTotalOrders();
+  fetchTotals();
 }, []);
-
 
 
   useEffect(() => {
-  const fetchTopSelling = async () => {
-    try {
-      const res = await api.get("/api/best-selling");
-      if (res.data.status) {
-        setTopSelling(res.data.data); // set the top-selling products state
+    const fetchTotalOrders = async () => {
+      try {
+        const res = await api.get("/api/total-orders");
+        setTotalOrders(res.data.totalOrders);
+      } catch (err) {
+        console.error("Error fetching total orders:", err);
       }
-    } catch (err) {
-      console.error("Error fetching top-selling products:", err);
-    }
-  };
+    };
 
-  fetchTopSelling();
-}, []);
+    fetchTotalOrders();
+  }, []);
 
-  const revenueData = [
-    { day: "Sun", revenue: 1200 },
-    { day: "Mon", revenue: 1800 },
-    { day: "Tue", revenue: 900 },
-    { day: "Wed", revenue: 2200 },
-    { day: "Thu", revenue: 1600 },
-    { day: "Fri", revenue: 2900 },
-    { day: "Sat", revenue: 2400 },
-  ];
+  useEffect(() => {
+    const fetchTopSelling = async () => {
+      try {
+        const res = await api.get("/api/best-selling");
+        if (res.data.status) {
+          setTopSelling(res.data.data); // set the top-selling products state
+        }
+      } catch (err) {
+        console.error("Error fetching top-selling products:", err);
+      }
+    };
 
-  const satisfactionData = [
-    { name: "Satisfied", value: 96.99 },
-    { name: "Others", value: 3.01 },
-  ];
+    fetchTopSelling();
+  }, []);
 
+  
 
   return (
-    <Box sx={{ p: 4 }}>
-      <Typography variant="h4" sx={{ fontWeight: "bold", mb: 4 }}>
-        Dashboard
-      </Typography>
+  <Box sx={{ p: 4 }}>
+  {/* Header */}
+  <Typography variant="h4" sx={{ fontWeight: "bold", mb: 6 }}>
+    Dashboard
+  </Typography>
 
-      {/* Stat Cards - 1 column on xs, 3 columns on md+ */}
-      <Box
-        sx={{
-          display: "grid",
-          gap: 3,
-          gridTemplateColumns: { xs: "1fr", md: "repeat(3, 1fr)" },
-        }}
-      >
-        <Box>
-        <StatCard label="Total Products" value={totalProducts} />
-        </Box>
-
-        <Box>
-            <StatCard label="Total Stock Count" value={totalStock} />
-        </Box>
-
-        <Box>
-          <StatCard
-            label="Total Orders" value={totalOrder}/>
-            
-        </Box>
-      </Box>
-
-      {/* Charts - stack vertically on small screens, side-by-side on md+ */}
-      <Box
-        sx={{
-          display: "grid",
-          gap: 3,
-          mt: 4,
-          gridTemplateColumns: { xs: "1fr", md: "2fr 1fr" }, // revenue wider than pie on md+
-          alignItems: "start",
-        }}
-      >
-        {/* Revenue chart container with fixed height */}
-        <Box sx={{ height: { xs: 300, md: 420 }, width: "100%" }}>
-          <RevenueChart data={revenueData} />
-        </Box>
-
-        {/* Right column: pie (and any other small widgets) */}
-        <Box sx={{ display: "grid", gap: 3 }}>
-          <Box sx={{ height: { xs: 220, md: 420 }, width: "100%" }}>
-            <SatisfactionPie data={satisfactionData} />
-          </Box>
-
-          {/* Example small stat card or other widget area (optional) */}
-          <Box sx={{ display: { xs: "none", md: "block" } }}>
-            {/* <StatCard label="Extra Metric" value={"—"} /> */}
-          </Box>
-        </Box>
-      </Box>
-
-      {/* Top Selling Products (full width) */}
-      <Box sx={{ mt: 4 }}>
-        <TopSellingProducts products={topSelling} />
-      </Box>
+  {/* Stat Cards */}
+  <Box
+    sx={{
+      display: "grid",
+      gap: 4,
+      gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)" }, // 2 cards in md+
+      mb: 6, // space below stat cards
+    }}
+  >
+    <Box sx={{ width: "100%", height: 220 }}>
+      <StatCard label="Total Products" value={totalProducts} />
     </Box>
-  );
+
+    <Box sx={{ width: "100%", height: 220 }}>
+      <StatCard label="Total Stock Count" value={totalStock} />
+    </Box>
+  </Box>
+
+  {/* Charts Section */}
+  <Box
+    sx={{
+      display: "grid",
+      gap: 4,
+      gridTemplateColumns: { xs: "1fr", md: "2fr 1fr" },
+      mb: 6, // space below charts
+    }}
+  >
+    <Box sx={{ height: 400 }}>
+      <RevenueChart />
+    </Box>
+    <Box sx={{ mt: 4 }}>
+  {/* <DashboardPieChart totalUsers={totalUsers} totalOrders={totalOrder} /> */}
+</Box>
+  </Box>
+
+  {/* Top Selling Products */}
+  <Box sx={{ mb: 6 }}>
+    <TopSellingProducts products={topSelling} />
+  </Box>
+</Box>
+  )
 }

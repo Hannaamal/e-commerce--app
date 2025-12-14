@@ -381,7 +381,7 @@ export default function ProductsPage() {
           sx={{ minWidth: 200 }}
         />
 
-        {/* Category Filter */}
+        {/* Category Filter
         <TextField
           select
           label="Category"
@@ -392,11 +392,11 @@ export default function ProductsPage() {
         >
           <option value="">All Categories</option>
           {categories.map((cat: any) => (
-            <option key={cat._id} value={cat._id}>
+            <option key={cat._id} value={cat.title}>
               {cat.title}
             </option>
           ))}
-        </TextField>
+        </TextField> */}
 
         {/* Min Price
         <TextField

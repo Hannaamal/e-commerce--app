@@ -105,8 +105,8 @@ export default function AdminNavbar() {
         </Box>
 
         <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={closeMenu}>
-          <MenuItem onClick={closeMenu}>Profile</MenuItem>
-          <MenuItem onClick={closeMenu}>Settings </MenuItem>
+          {/* <MenuItem onClick={closeMenu}>Profile</MenuItem>
+          <MenuItem onClick={closeMenu}>Settings </MenuItem> */}
           <Divider />
          <MenuItem
   onClick={() => {

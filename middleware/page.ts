@@ -2,13 +2,21 @@ import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
 
 export const middleware = (req: NextRequest) => {
+   console.log("Middleware triggered for:", req.nextUrl.pathname);
   const token = req.cookies.get("token")?.value;
+   console.log("Token:", token);
+
+   
+   
+   
+   
+   
   const user = req.cookies.get("user")?.value;
   const url = req.nextUrl.pathname;
 
   // PUBLIC ROUTES
 
-  const publicRoutes = ["/","/product", "/login", "/register"];
+  const publicRoutes = ["/","/products", "/login", "/signup","/products/"];
 
   if (publicRoutes.includes(url)) {
     return NextResponse.next();
@@ -16,6 +24,7 @@ export const middleware = (req: NextRequest) => {
 
   //NO TOKEN REDIRECT
   if (!token) {
+      console.log("No token found. Redirecting to /login");
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
@@ -35,7 +44,7 @@ export const middleware = (req: NextRequest) => {
   }
 
   // ADMIN ROUTES
-  if (url.startsWith("/admin") && role !== "Admin") {
+  if (url.startsWith("/admin") && role !== "admin") {
       return NextResponse.redirect(new URL("/not-authorized", req.url));
 
   }
@@ -51,4 +60,7 @@ export const middleware = (req: NextRequest) => {
 };
 
 export const config = {
-  matcher: ["/((?!_next|favicon.ico|api|static|assets).*)"],
+  matcher: [
+    "/((?!api|_next|static|favicon.ico|assets).*)",
+  ],
+};
