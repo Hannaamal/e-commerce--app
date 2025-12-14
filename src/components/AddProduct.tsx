@@ -59,7 +59,6 @@ export default function ProductsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
 
-
   // Form state
   const [formData, setFormData] = useState<
     Partial<Product> & { image?: File | null }
@@ -86,22 +85,25 @@ export default function ProductsPage() {
     "description",
     "brand",
   ];
-
+  const isValidObjectId = (id: string) => /^[0-9a-fA-F]{24}$/.test(id);
   const [appliedFilters, setAppliedFilters] = useState<{
-  q ?: string;
-  category?: string;
-}>({});
+    q?: string;
+    category?: string;
+  }>({});
   useEffect(() => {
-  dispatch(
-    listProducts({
-      skip: page * pageSize,
-      limit: pageSize,
-      q : appliedFilters.q ?.trim() || "",
-      category: appliedFilters.category || "All", // send 'All' if empty
-    })
-  );
-}, [dispatch, page, pageSize, appliedFilters]);
-
+    const categoryParam =
+      appliedFilters.category && isValidObjectId(appliedFilters.category)
+        ? appliedFilters.category
+        : undefined;
+    dispatch(
+      listProducts({
+        skip: page * pageSize,
+        limit: pageSize,
+        q: appliedFilters.q?.trim() || "",
+        category: categoryParam,
+      })
+    );
+  }, [dispatch, page, pageSize, appliedFilters]);
   const handleView = async (id: string) => {
     try {
       const res = await fetch(`http://localhost:5000/api/product/${id}`);
@@ -425,14 +427,12 @@ export default function ProductsPage() {
         /> */}
 
         {/* Apply Filters */}
-        {/* Apply Filters */}
         <Button
           variant="contained"
           onClick={() => {
             const filters: { q?: string; category?: string } = {};
-
             if (searchTerm.trim() !== "") filters.q = searchTerm.trim();
-            if (filterCategory && filterCategory !== "")
+            if (filterCategory && isValidObjectId(filterCategory))
               filters.category = filterCategory;
 
             setAppliedFilters(filters);

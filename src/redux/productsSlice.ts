@@ -11,6 +11,7 @@ interface ProductState {
   loading: boolean;
   error: string | null;
   isRefresh: boolean;
+  selectedCategory: "All"
 }
 
 // 📌 Initial State
@@ -20,6 +21,7 @@ const initialState: ProductState = {
   loading: false,
   error: null,
   isRefresh: false,
+  selectedCategory: "All",
 };
 
  // --------------------------------------API Thunks -------------------------------------//
@@ -32,7 +34,7 @@ export const listProducts = createAsyncThunk(
   "products/fetch",
   async (category: string) => {
     const query = category && category !== "All" ? `?category=${category}` : "";
-    const res = await api.get(`/api/products${query}`);
+    const res = await api.get(`/api/customer/products${query}`);
     return res.data.data;
   }
 );
@@ -43,7 +45,7 @@ export const listProducts = createAsyncThunk(
 
 //  Get single product
 export const getProduct = createAsyncThunk('products/get', async (id: string) => {
-  const res = await api.get(`/api/product/${id}`);
+  const res = await api.get(`/api/customer/products/${id}`);
   return res.data;
 });
 
@@ -53,10 +55,13 @@ const productSlice = createSlice({
   name: 'products',
   initialState,
   reducers: {
-    resetRefresh(state) {
-      state.isRefresh = false;
-    },
+    setSelectedCategory(state, action) {
+    state.selectedCategory = action.payload;
   },
+  resetRefresh(state) {
+    state.isRefresh = false;
+  }
+},
   extraReducers: builder => {
     builder
       //  LIST
@@ -91,5 +96,5 @@ const productSlice = createSlice({
   },
 });
 
-export const { resetRefresh } = productSlice.actions;
+export const { resetRefresh,setSelectedCategory, } = productSlice.actions;
 export default productSlice.reducer;

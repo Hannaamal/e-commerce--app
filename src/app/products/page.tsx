@@ -25,7 +25,9 @@ export default function ProductsPage() {
 
   const [page, setPage] = useState(1); // current page
   const limit = 6; // products per page
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const selectedCategory = useSelector(
+    (state: RootState) => state.products.selectedCategory
+  );
   const categories = useSelector((state: RootState) => state.categories.list);
 
   // Fetch products from Redux
@@ -35,20 +37,13 @@ export default function ProductsPage() {
 
   // Fetch products whenever category changes
   useEffect(() => {
-    dispatch(listProducts(selectedCategory));
-  }, [dispatch, selectedCategory]);
-
-  const filteredProducts =
-    selectedCategory === "All"
-      ? products
-      : products.filter(
-          (p) => p.category?.toLowerCase() === selectedCategory.toLowerCase()
-        );
-
+  setPage(1);
+  dispatch(listProducts(selectedCategory));
+}, [dispatch, selectedCategory]);
+  
   // Pagination AFTER filtering
-  const total = products.length;
-  const totalPages = Math.ceil(total / limit);
-
+ const total = products.length;
+ const totalPages = Math.ceil(total / limit);
   const start = (page - 1) * limit;
   const end = start + limit;
 
@@ -66,7 +61,10 @@ export default function ProductsPage() {
       >
         Products
       </Typography>
-      <Categories data={categories || []} onSelectCategory={setSelectedCategory} />
+      <Categories
+        data={categories || []}
+        onSelectCategory={(categoryId) => dispatch(listProducts(categoryId))}
+      />
 
       {/* Products */}
       {products.length === 0 ? (

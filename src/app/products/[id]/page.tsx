@@ -166,7 +166,7 @@ export default function ViewProductPage() {
           </Typography>
 
           <Typography sx={{ color: "#6b7280", mb: 2 }}>
-            Category: {product.category || "N/A"}
+           Category: {product.category?.title || "N/A"}
           </Typography>
 
           <Divider sx={{ my: 2 }} />

@@ -19,6 +19,7 @@ import myorderReducer from "./myorderSlice"
 
 
 
+
 export const store = configureStore({
   reducer: {
     products: productsReducer,
@@ -36,6 +37,7 @@ export const store = configureStore({
       reports: reportsReducer,
       admintotalOrders:admintotalOrdersReducer,
       myorder:myorderReducer
+      
   },
 });
 

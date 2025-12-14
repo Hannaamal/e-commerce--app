@@ -46,7 +46,7 @@ export default function Categories({
             key={cat._id}
             onClick={() => {
               setActive(cat._id);
-              onSelectCategory(cat.title);
+              onSelectCategory(cat._id); // ✅ SEND ObjectId
             }}
             sx={{
               width: active === cat._id ? 130 : 180,

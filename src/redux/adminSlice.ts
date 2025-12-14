@@ -34,21 +34,21 @@ export const listProducts = createAsyncThunk(
   async (params: {
     skip?: number;
     limit?: number;
-    search?: string;
+    q?: string;
     category?: string;
-    minPrice?: number;
-    maxPrice?: number;
+    // minPrice?: number;
+    // maxPrice?: number;
   } = {}) => {
-    const { skip = 0, limit = 10, search, category, minPrice, maxPrice } = params;
+    const { skip = 0, limit = 10, q, category } = params;
 
     const query = new URLSearchParams();
     query.append("skip", skip.toString());
     query.append("limit", limit.toString());
 
-    if (search) query.append("search", search);
+    if (q) query.append("q", q);
     if (category) query.append("category", category);
-    if (minPrice !== undefined) query.append("minPrice", minPrice.toString());
-    if (maxPrice !== undefined) query.append("maxPrice", maxPrice.toString());
+    // if (minPrice !== undefined) query.append("minPrice", minPrice.toString());
+    // if (maxPrice !== undefined) query.append("maxPrice", maxPrice.toString());
 
     const { data } = await api.get(`/api/products?${query.toString()}`);
 

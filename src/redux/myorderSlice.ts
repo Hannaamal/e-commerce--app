@@ -5,7 +5,7 @@ export const fetchMyOrders = createAsyncThunk(
   "orders/fetchMyOrders",
  async (userId: string, { rejectWithValue }) => {
     try {
-     const { data } = await api.get(`/api/myorder/my-orders`);
+     const { data } = await api.get(`/api/order/my-orders`);
       return data.orders;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message);

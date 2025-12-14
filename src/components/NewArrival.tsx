@@ -1,6 +1,17 @@
-import Link from "next/link";
+"use client";
+import { useDispatch } from "react-redux";
+import { useRouter } from "next/navigation";
+import { setSelectedCategory } from "@/redux/productsSlice";
 
 export default function NewArrival() {
+  const dispatch = useDispatch();
+  const router = useRouter();
+
+  const goToCategory = (categoryId: string) => {
+    dispatch(setSelectedCategory(categoryId));
+    router.push("/products");
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-10">
       {/* Title */}
@@ -25,9 +36,13 @@ export default function NewArrival() {
             </p>
 
             {/* Category: Gaming */}
-            <Link href={`/products?category=${encodeURIComponent("All")}`}>
-              <button className="mt-2 bg-white text-black px-4 py-1 rounded">Shop Now</button>
-            </Link>
+
+            <button
+              onClick={() => goToCategory("693aac606f38eb6af357f000")}
+              className="mt-2 bg-white text-black px-4 py-1 rounded"
+            >
+              Shop Now
+            </button>
           </div>
         </div>
 
@@ -45,11 +60,12 @@ export default function NewArrival() {
                 Featured woman collections that give you another vibe.
               </p>
 
-              {/* Category: beauty */}
-              <Link href={`/products?category=${encodeURIComponent("Beauty")}`}>
-              
-                <button className="mt-2 bg-white text-black px-4 py-1 rounded">Shop Now</button>
-              </Link>
+              <button
+                onClick={() => goToCategory("693b0e1b816c0ac0b0503a1f")}
+                className="mt-2 bg-white text-black px-4 py-1 rounded"
+              >
+                Shop Now
+              </button>
             </div>
           </div>
 
@@ -66,11 +82,12 @@ export default function NewArrival() {
                 <p className="text-sm">Simple and Elegent Furniture</p>
 
                 {/* Category: Furniture */}
-                <Link href={`/products?category=${encodeURIComponent("Furniture")}`}>
-                  <button className="mt-2 bg-white text-black px-4 py-1 rounded">
-                    Shop Now
-                  </button>
-                </Link>
+                <button
+                  onClick={() => goToCategory("693aac606f38eb6af357f000")}
+                  className="mt-2 bg-white text-black px-4 py-1 rounded"
+                >
+                  Shop Now
+                </button>
               </div>
             </div>
 
@@ -85,11 +102,12 @@ export default function NewArrival() {
                 <p className="text-sm">GUCCI INTENSE-OUD EDP</p>
 
                 {/* Category: Perfume */}
-                <Link href={`/products?category=${encodeURIComponent("Perfume")}`}>
-                  <button className="mt-2 bg-white text-black px-4 py-1 rounded">
-                    Shop Now
-                  </button>
-                </Link>
+                <button
+                  onClick={() => goToCategory("693aacd26f38eb6af357f006")}
+                  className="mt-2 bg-white text-black px-4 py-1 rounded"
+                >
+                  Shop Now
+                </button>
               </div>
             </div>
           </div>
