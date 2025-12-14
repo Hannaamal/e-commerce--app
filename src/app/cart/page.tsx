@@ -37,7 +37,7 @@ export default function CartPage() {
 
   const handleCheckout = () => {
     if (validCartItems.length > 0) {
-      console.log("Checkout clicked"); 
+      console.log("Checkout clicked");
       router.push("/checkout"); // navigate to checkout
     }
   };
@@ -45,7 +45,6 @@ export default function CartPage() {
   return (
     <div className="w-full flex justify-center py-10">
       <div className="max-w-7xl w-full px-4">
-
         <h1 className="text-3xl font-bold mb-6">Cart</h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
@@ -59,14 +58,11 @@ export default function CartPage() {
                   className="flex items-center justify-between bg-gray-100 p-4 rounded-xl"
                 >
                   <img
-                    src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/${
-                      item.product_id?.image
-                        ? item.product_id.image.replace(/\\/g, "/")
-                        : "placeholder.png"
-                    }`}
-                    alt={item.product_id?.product_name || "Product"}
-                    width={110}
-                    height={110}
+                    src={`${
+                      process.env.NEXT_PUBLIC_BACKEND_URL
+                    }/${item.image.replace(/\\/g, "/")}`}
+                    alt={item.productName}
+                    className="w-16 h-16 object-cover rounded"
                   />
 
                   <div className="flex-1 ml-5">

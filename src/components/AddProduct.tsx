@@ -58,10 +58,7 @@ export default function ProductsPage() {
   const [viewProduct, setViewProduct] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
-  const [filterPriceRange, setFilterPriceRange] = useState<{
-    min?: number;
-    max?: number;
-  }>({});
+
 
   // Form state
   const [formData, setFormData] = useState<
@@ -90,21 +87,20 @@ export default function ProductsPage() {
     "brand",
   ];
 
-  const [appliedFilters, setAppliedFilters] = useState({
-    q: "",
-    category: "",
-  });
-
+  const [appliedFilters, setAppliedFilters] = useState<{
+  q ?: string;
+  category?: string;
+}>({});
   useEffect(() => {
-    dispatch(
-      listProducts({
-        skip: page * pageSize,
-        limit: pageSize,
-        q: appliedFilters.q.trim(),
-        category: appliedFilters.category || "All",
-      })
-    );
-  }, [dispatch, page, pageSize, appliedFilters]);
+  dispatch(
+    listProducts({
+      skip: page * pageSize,
+      limit: pageSize,
+      q : appliedFilters.q ?.trim() || "",
+      category: appliedFilters.category || "All", // send 'All' if empty
+    })
+  );
+}, [dispatch, page, pageSize, appliedFilters]);
 
   const handleView = async (id: string) => {
     try {
@@ -300,7 +296,20 @@ export default function ProductsPage() {
       </Typography>
 
       {/* Add Product Form */}
-      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, mb: 4, pt: 1 }}>
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: {
+            xs: "1fr", // mobile
+            sm: "1fr 1fr", // tablet
+            md: "1fr 1fr 1fr 1fr", // desktop
+          },
+          gap: 2,
+          mb: 4,
+          pt: 1,
+          alignItems: "center",
+        }}
+      >
         {fields.map((field) => (
           <TextField
             key={field}
@@ -320,17 +329,6 @@ export default function ProductsPage() {
             sx={{ minWidth: 200 }}
           />
         ))}
-
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) =>
-            setFormData({
-              ...formData,
-              image: e.target.files?.[0] || null,
-            })
-          }
-        />
 
         {/* CATEGORY DROPDOWN */}
         <select
@@ -356,6 +354,17 @@ export default function ProductsPage() {
             </option>
           ))}
         </select>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              image: e.target.files?.[0] || null,
+            })
+          }
+        />
+
         <Button variant="contained" onClick={handleAddProduct}>
           Add Product
         </Button>
@@ -416,6 +425,7 @@ export default function ProductsPage() {
         /> */}
 
         {/* Apply Filters */}
+        {/* Apply Filters */}
         <Button
           variant="contained"
           onClick={() => {
@@ -426,15 +436,6 @@ export default function ProductsPage() {
               filters.category = filterCategory;
 
             setAppliedFilters(filters);
-
-            dispatch(
-              listProducts({
-                skip: 0,
-                limit: pageSize,
-                ...filters,
-              })
-            );
-
             setPage(0); // Reset pagination
           }}
         >

@@ -15,6 +15,7 @@ export default function AdminDashboard() {
   const [totalProducts, setTotalProducts] = useState(0);
   const [totalStock, setTotalStock] = useState(0);
    const [topSelling, setTopSelling] = useState<any[]>([]);
+   const[totalOrder,setTotalOrders]=useState(0);
 
   useEffect(() => {
     const fetchTotalProducts = async () => {
@@ -39,6 +40,21 @@ export default function AdminDashboard() {
 
     fetchTotalStock();
   }, []);
+
+useEffect(() => {
+  const fetchTotalOrders = async () => {
+    try {
+      const res = await api.get("/api/total-orders");
+      setTotalOrders(res.data.totalOrders);
+    } catch (err) {
+      console.error("Error fetching total orders:", err);
+    }
+  };
+
+  fetchTotalOrders();
+}, []);
+
+
 
   useEffect(() => {
   const fetchTopSelling = async () => {
@@ -95,9 +111,8 @@ export default function AdminDashboard() {
 
         <Box>
           <StatCard
-            label="Total Orders"
-            value={JSON.parse(localStorage.getItem("Orders") || "[]").length}
-          />
+            label="Total Orders" value={totalOrder}/>
+            
         </Box>
       </Box>
 
