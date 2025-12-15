@@ -9,7 +9,7 @@ import {
 
 interface Product {
   id: string | number;
-  name: string;
+  product_name: string;
   price: number;
   stock?: number;
   image: string;
@@ -55,13 +55,13 @@ export default function TopSellingProducts({
                           : `http://localhost:5000/${p.image}` // prepend backend URL
                         : "" // fallback if no image
                     }
-                    alt={p.name}
+                    alt={p.product_name}
                     variant="rounded"
                     sx={{ width: 48, height: 48 }}
                   />
                   <Box>
                     <Typography sx={{ fontWeight: "bold" }}>
-                      {p.name}
+                      {p.product_name}
                     </Typography>
                     <Typography color="text.secondary" variant="body2">
                       ${p.price}

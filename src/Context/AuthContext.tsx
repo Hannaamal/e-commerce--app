@@ -51,19 +51,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Fetch the logged user
   const fetchUser = async (jwt: string) => {
-    try {
-      const res = await api.get("/api/auth/me", {
-        headers: { Authorization: `Bearer ${jwt}` },
-      });
+  try {
+    const res = await api.get("/api/auth/me", {
+      headers: {
+        Authorization: `Bearer ${jwt}`,
+      },
+    });
 
-      setUser(res.data.data);
-    } catch (err) {
-      console.log("Failed to load user:", err);
+    setUser(res.data.data);
+  } catch (err: any) {
+    // 🔥 Only logout if token is invalid
+    if (err.response?.status === 401 || err.response?.status === 403) {
       logout();
-    } finally {
-      setLoading(false);
+    } else {
+      console.error("Temporary error, not logging out", err);
     }
-  };
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   // Login function
   const login = (token: string, user: User) => {

@@ -38,9 +38,8 @@ export default function NavbarProfileDropdown() {
   }
 
   const handleLogout = async () => {
-    await dispatch(logoutUser());
-    handleClose();
-    router.push("/login");
+    await dispatch(logoutUser()); // clear Redux + cookies
+    window.location.href = "/login";   // force full page reload
   };
 
   return (

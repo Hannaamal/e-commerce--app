@@ -189,7 +189,6 @@ export default function ProductsPage() {
     setSelectedId(id);
     setOpenDeleteDialog(true);
   };
-
   const handleConfirmDelete = () => {
     if (!selectedId) return;
 

@@ -69,6 +69,7 @@ export default function Login() {
           </Typography>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             <TextField
               fullWidth
               label="Email"
@@ -86,6 +87,7 @@ export default function Login() {
             <Button type="submit" variant="contained" fullWidth size="large">
               Login
             </Button>
+            </Box>
           </form>
 
           <Box className="text-center mt-4">

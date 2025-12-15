@@ -73,6 +73,7 @@ export const loginUser = createAsyncThunk(
 
 export const logoutUser = createAsyncThunk("auth/logoutUser", async () => {
   Cookies.remove("auth_token", { path: "/" });
+  Cookies.remove("role", { path: "/" });
   return true;
 });
 
@@ -87,12 +88,14 @@ const authSlice = createSlice({
       .addCase(signupUser.pending, (state) => {
         state.loading = true;
         state.error = null;
+        
       })
       .addCase(signupUser.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload.user;
         state.token = action.payload.token;
         state.role = action.payload.role;
+        
       })
       .addCase(signupUser.rejected, (state, action: any) => {
         state.loading = false;

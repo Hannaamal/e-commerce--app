@@ -91,6 +91,7 @@ export default function Signup() {
           </Typography>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             <TextField
               fullWidth
               label="Full Name"
@@ -135,6 +136,7 @@ export default function Signup() {
             >
               Register
             </Button>
+            </Box>
           </form>
 
           <Box className="text-center mt-4">

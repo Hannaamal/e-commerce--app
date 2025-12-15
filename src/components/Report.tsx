@@ -1,11 +1,15 @@
+"use client"
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchRevenueData } from "@/redux/adminreportSlice";
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
+import type { AppDispatch } from "@/redux/store";
+
 export default function ReportsPage() {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const { revenueData, loading } = useSelector((state) => state.reports);
+
 
   useEffect(() => {
     dispatch(fetchRevenueData());

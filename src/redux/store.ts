@@ -14,6 +14,7 @@ import orderReducer from "./orderSlice";
 import  reportsReducer from "./adminreportSlice"
 import  admintotalOrdersReducer from "./adminorderSlice"
 import myorderReducer from "./myorderSlice"
+import adminOrdersReducer from "./adminorderSlice"
 
 
 
@@ -35,8 +36,8 @@ export const store = configureStore({
     profile: profileReducer,
      order: orderReducer,
       reports: reportsReducer,
-      admintotalOrders:admintotalOrdersReducer,
-      myorder:myorderReducer
+      myorder:myorderReducer,
+      adminOrders: adminOrdersReducer, 
       
   },
 });

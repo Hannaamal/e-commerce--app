@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Box, Typography, Stack } from "@mui/material";
-
+import Cookies from "js-cookie";
 import api from "@/lib/api";
 
 import StatCard from "@/components/StatCard";
@@ -16,8 +16,9 @@ export default function AdminDashboard() {
   const [totalProducts, setTotalProducts] = useState(0);
   const [totalStock, setTotalStock] = useState(0);
   const [topSelling, setTopSelling] = useState<any[]>([]);
-  const [totalOrder, setTotalOrders] = useState(0);
    const [totalUsers, setTotalUsers] = useState(0);
+  const [totalOrders, setTotalOrders] = useState(0);
+
 
 
   useEffect(() => {
@@ -31,6 +32,24 @@ export default function AdminDashboard() {
     };
     fetchTotalProducts();
   }, []);
+
+   useEffect(() => {
+    const fetchStats = async () => {
+      const token = Cookies.get("auth_token");
+
+      const res = await api.get("/api/admin/total-user", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setTotalUsers(res.data.totalUsers);
+      setTotalOrders(res.data.totalOrders);
+    };
+
+    fetchStats();
+  }, []);
+
   useEffect(() => {
     const fetchTotalStock = async () => {
       try {
@@ -45,27 +64,27 @@ export default function AdminDashboard() {
   }, []);
 
 
-  useEffect(() => {
-  const fetchTotals = async () => {
-    try {
-      const usersRes = await api.get("/api/users/total");
-      setTotalUsers(usersRes.data.totalUsers);
+//   useEffect(() => {
+//   const fetchTotals = async () => {
+//     try {
+//       const usersRes = await api.get("/api/users/total");
+//       setTotalUsers(usersRes.data.totalUsers);
 
-      const ordersRes = await api.get("/api/orders/total");
-      setTotalOrders(ordersRes.data.totalOrders);
-    } catch (err) {
-      console.error("Error fetching totals:", err);
-    }
-  };
+//       const ordersRes = await api.get("/api/orders/total");
+//       setTotalOrders(ordersRes.data.totalOrders);
+//     } catch (err) {
+//       console.error("Error fetching totals:", err);
+//     }
+//   };
 
-  fetchTotals();
-}, []);
+//   fetchTotals();
+// }, []);
 
 
   useEffect(() => {
     const fetchTotalOrders = async () => {
       try {
-        const res = await api.get("/api/total-orders");
+        const res = await api.get("/api/admin/total-orders");
         setTotalOrders(res.data.totalOrders);
       } catch (err) {
         console.error("Error fetching total orders:", err);
@@ -130,7 +149,7 @@ export default function AdminDashboard() {
       <RevenueChart />
     </Box>
     <Box sx={{ mt: 4 }}>
-  {/* <DashboardPieChart totalUsers={totalUsers} totalOrders={totalOrder} /> */}
+  <DashboardPieChart totalUsers={totalUsers} totalOrders={totalOrders} />
 </Box>
   </Box>
 

@@ -1,14 +1,12 @@
 import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
 
+
 export const middleware = (req: NextRequest) => {
    console.log("Middleware triggered for:", req.nextUrl.pathname);
-  const token = req.cookies.get("token")?.value;
-   console.log("Token:", token);
+  const token = req.cookies.get("auth_token")?.value;
+   console.log("auth_token", token);
 
-   
-   
-   
    
    
   const user = req.cookies.get("user")?.value;
@@ -27,7 +25,6 @@ export const middleware = (req: NextRequest) => {
       console.log("No token found. Redirecting to /login");
     return NextResponse.redirect(new URL("/login", req.url));
   }
-
 
   let role;
 

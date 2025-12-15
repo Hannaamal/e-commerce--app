@@ -25,10 +25,12 @@ import GroupIcon from "@mui/icons-material/Group";
 import LogoutIcon from "@mui/icons-material/Logout";
 
 import Link from "next/link";
+import { useAuth } from "@/Context/AuthContext";
 
 export default function AdminNavbar() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
+  const { user, logout } = useAuth(); // ✅ Get user from AuthContext
 
   const openMenu = (event: React.MouseEvent<HTMLElement>) => {
     setMenuAnchor(event.currentTarget);
@@ -37,6 +39,18 @@ export default function AdminNavbar() {
   const closeMenu = () => {
     setMenuAnchor(null);
   };
+
+  const getInitials = (name: string | undefined) => {
+    if (!name) return "A";
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase();
+  };
+
+
+
   const handleLogout = async () => {
   // Clear HTTP cookies by overwriting them with empty values
   document.cookie = "auth_token=; path=/; max-age=0;";
@@ -50,8 +64,11 @@ export default function AdminNavbar() {
     { label: "Dashboard", icon: <DashboardIcon />, path: "/admin" },
     { label: "Products", icon: <ShoppingBagIcon />, path: "/admin/product" },
     {label: "Category", icon: <GroupIcon />, path: "/admin/category" },
+    { label: "Orders", icon: <GroupIcon />, path: "/admin/orders" },
     { label: "Reports", icon: <BarChartIcon />, path: "/admin/reports" },
     { label: "Users", icon: <GroupIcon />, path: "/admin/users" },
+    
+
   ];
 
   return (
@@ -86,21 +103,19 @@ export default function AdminNavbar() {
         }}
       >
         {/* Profile Section */}
+        {/* Profile Section */}
         <Box sx={{ textAlign: "center", mb: 3 }}>
           <Avatar
-            sx={{
-              width: 70,
-              height: 70,
-              mx: "auto",
-              cursor: "pointer",
-            }}
+            sx={{ width: 70, height: 70, mx: "auto", cursor: "pointer" }}
             onClick={openMenu}
           >
-            A
+            {getInitials(user?.name)}
           </Avatar>
-          <Typography sx={{ mt: 1, fontWeight: "bold" }}>Admin User</Typography>
+          <Typography sx={{ mt: 1, fontWeight: "bold" }}>
+            {user?.name || "Admin User"}
+          </Typography>
           <Typography variant="body2" color="gray">
-            admin@gmail.com
+            {user?.email || "admin@example.com"}
           </Typography>
         </Box>
 

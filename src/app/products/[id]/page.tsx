@@ -8,6 +8,7 @@ import { getProduct } from "@/redux/productsSlice";
 import { addToCart, fetchCartItems } from "@/redux/cartSlice";
 import { addWishlist, removeWishlist } from "@/redux/wishlistSlice";
 
+
 import {
   Dialog,
   DialogTitle,

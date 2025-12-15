@@ -2,6 +2,7 @@
 import { useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
 import { setSelectedCategory } from "@/redux/productsSlice";
+import Link from "next/link";
 
 export default function NewArrival() {
   const dispatch = useDispatch();
@@ -9,7 +10,8 @@ export default function NewArrival() {
 
   const goToCategory = (categoryId: string) => {
     dispatch(setSelectedCategory(categoryId));
-    router.push("/products");
+    // router.push("/products");
+    router.push(`/products?category=${categoryId}`);
   };
 
   return (
@@ -36,13 +38,14 @@ export default function NewArrival() {
             </p>
 
             {/* Category: Gaming */}
-
+    
             <button
               onClick={() => goToCategory("693aac606f38eb6af357f000")}
               className="mt-2 bg-white text-black px-4 py-1 rounded"
             >
               Shop Now
             </button>
+
           </div>
         </div>
 

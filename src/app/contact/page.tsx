@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Container, TextField, Button, Typography, Box } from "@mui/material";
+import { useRouter } from "next/navigation";
 
 export default function ContactUs() {
   const [formData, setFormData] = useState({
@@ -13,12 +14,14 @@ export default function ContactUs() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+  const router = useRouter();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Form submitted:", formData);
     alert("Thank you for contacting us!");
     setFormData({ name: "", email: "", message: "" });
+     router.push("/");
   };
 
   return (

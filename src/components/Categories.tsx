@@ -1,7 +1,8 @@
 "use client";
 
 import { Box, Typography, Card, CardMedia, CardContent } from "@mui/material";
-import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 type Category = {
   _id: string;
@@ -19,6 +20,17 @@ export default function Categories({
   onSelectCategory,
 }: CategoriesProps) {
   const [active, setActive] = useState<string | null>(null);
+
+  const searchParams = useSearchParams();
+
+  const categoryFromUrl = searchParams.get("category");
+
+  useEffect(() => {
+    if (categoryFromUrl) {
+      setActive(categoryFromUrl);
+      onSelectCategory(categoryFromUrl);
+    }
+  }, [categoryFromUrl, onSelectCategory]); 
 
   return (
     <Box sx={{ width: "100%", mb: 5 }}>
