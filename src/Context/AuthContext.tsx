@@ -18,6 +18,7 @@ interface AuthContextProps {
   isAuthenticated: boolean;   // ✅ ADD THIS
   login: (token: string, user: User) => void;
   logout: () => void;
+  setAuthenticatedUser: (token: string, user: User) => void;
 }
 
 const AuthContext = createContext<AuthContextProps>({
@@ -27,6 +28,7 @@ const AuthContext = createContext<AuthContextProps>({
   isAuthenticated: false,   // ✅ ADD DEFAULT
   login: () => {},
   logout: () => {},
+  setAuthenticatedUser: () => {},
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -69,6 +71,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(token);
     setUser(user);
   };
+  const setAuthenticatedUser = (token: string, user: User) => {
+  Cookies.set("auth_token", token, { path: "/" });
+  setToken(token);
+  setUser(user);
+};
+
+  
 
   // Logout
   const logout = () => {
@@ -85,7 +94,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loading,
         isAuthenticated: !!token,   // ✅ THE IMPORTANT LINE
         login,
-        logout
+        logout,
+        setAuthenticatedUser,
       }}
     >
       {children}

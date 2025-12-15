@@ -4,7 +4,8 @@ import { useState, ChangeEvent, FormEvent } from "react";
 import axios from "@/lib/api";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-
+import Cookies from "js-cookie";
+import { useAuth } from "@/Context/AuthContext";
 import {
   TextField,
   Button,
@@ -35,17 +36,47 @@ export default function Signup() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    try {
-      await axios.post("/api/auth/register", form);
+  // const handleSubmit = async (e: FormEvent) => {
+  //   e.preventDefault();
+  //   try {
+  //     await axios.post("/api/auth/register", form);
 
-      alert("Registration successful!");
-      router.push("/");
-    } catch (error: any) {
-      alert(error?.response?.data?.message || "Registration failed");
-    }
-  };
+  //     alert("Registration successful!");
+  //     router.push("/");
+  //   } catch (error: any) {
+  //     alert(error?.response?.data?.message || "Registration failed");
+  //   }
+  // };
+
+
+
+  const { setAuthenticatedUser } = useAuth();
+
+
+  const handleSubmit = async (e: FormEvent) => {
+  e.preventDefault();
+
+  try {
+    const res = await axios.post("/api/auth/register", form);
+
+    // ✅ USE BACKEND KEYS
+    const token = res.data.accessToken;
+    const user = {
+      ...res.data.data,
+      role: res.data.role,
+    };
+
+    setAuthenticatedUser(token, user);
+
+    // ✅ REDIRECT
+    router.push("/");
+  } catch (error: any) {
+    alert(error?.response?.data?.message || "Registration failed");
+  }
+};
+
+
+
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100 px-4">

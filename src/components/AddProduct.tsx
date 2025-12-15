@@ -26,6 +26,7 @@ import {
 } from "@/redux/adminSlice";
 import { fetchCategories } from "@/redux/categorySlice"; // <-- make sure this path is the actual slice file (see notes below)
 
+
 type Product = {
   id: string;
   product_name: string;
@@ -206,9 +207,38 @@ export default function ProductsPage() {
     setOpenDeleteDialog(false);
   };
 
+
+
+  const validateEditProduct = (product: Product | null) => {
+  if (!product) return "Invalid product";
+
+  if (!product.product_name?.trim())
+    return "Product name is required";
+
+  if (!product.category)
+    return "Category is required";
+
+  if (product.price <= 0)
+    return "Price must be greater than 0";
+
+  if (product.stock < 0)
+    return "Stock cannot be negative";
+
+  if (product.rating < 0 || product.rating > 5)
+    return "Rating must be between 0 and 5";
+
+  return null; // ✅ valid
+};
+
   // Save Edit
   const handleEditSave = () => {
     if (!editingProduct) return;
+    const error = validateEditProduct(editingProduct);
+  if (error) {
+    alert(error);
+    return;
+  }
+
 
     const fd = new FormData();
 
