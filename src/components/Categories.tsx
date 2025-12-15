@@ -26,11 +26,10 @@ export default function Categories({
   const categoryFromUrl = searchParams.get("category");
 
   useEffect(() => {
-    if (categoryFromUrl) {
-      setActive(categoryFromUrl);
-      onSelectCategory(categoryFromUrl);
-    }
-  }, [categoryFromUrl, onSelectCategory]); 
+  if (categoryFromUrl) {
+    setActive(categoryFromUrl);
+  }
+}, [categoryFromUrl]);
 
   return (
     <Box sx={{ width: "100%", mb: 5 }}>

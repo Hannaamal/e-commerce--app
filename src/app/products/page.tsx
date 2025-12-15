@@ -3,7 +3,9 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "@/redux/store"; // your store types
-import { listProducts } from "@/redux/productsSlice";
+import { listProducts, setSelectedCategory } from "@/redux/productsSlice";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import {
   Container,
   Typography,
@@ -30,6 +32,16 @@ export default function ProductsPage() {
   );
   const categories = useSelector((state: RootState) => state.categories.list);
 
+  const searchParams = useSearchParams();
+  const categoryFromUrl = searchParams.get("category");
+  const router = useRouter();
+
+  useEffect(() => {
+    if (categoryFromUrl) {
+      dispatch(setSelectedCategory(categoryFromUrl));
+    }
+  }, [categoryFromUrl, dispatch]);
+
   // Fetch products from Redux
   useEffect(() => {
     dispatch(fetchCategories());
@@ -37,13 +49,13 @@ export default function ProductsPage() {
 
   // Fetch products whenever category changes
   useEffect(() => {
-  setPage(1);
-  dispatch(listProducts(selectedCategory));
-}, [dispatch, selectedCategory]);
-  
+    setPage(1);
+    dispatch(listProducts(selectedCategory));
+  }, [dispatch, selectedCategory]);
+
   // Pagination AFTER filtering
- const total = products.length;
- const totalPages = Math.ceil(total / limit);
+  const total = products.length;
+  const totalPages = Math.ceil(total / limit);
   const start = (page - 1) * limit;
   const end = start + limit;
 
@@ -63,7 +75,9 @@ export default function ProductsPage() {
       </Typography>
       <Categories
         data={categories || []}
-        onSelectCategory={(categoryId) => dispatch(listProducts(categoryId))}
+        onSelectCategory={(categoryId) => {
+          router.push(`/products?category=${categoryId}`);
+        }}
       />
 
       {/* Products */}
