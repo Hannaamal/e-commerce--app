@@ -6,14 +6,19 @@ import { useRouter } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
 import { logoutUser } from "@/redux/authSlice";
+import { useAuth } from "@/Context/AuthContext";
 
 export default function NavbarProfileDropdown() {
+  const { user } = useAuth();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [avatarLetter, setAvatarLetter] = useState<string | null>(null);
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
 
-  const { user } = useSelector((state: RootState) => state.auth);
+  // const { user } = useSelector((state: RootState) => state.auth);
+const role = user?.role;
+const isAdmin = role === "admin";
+const isCustomer = role === "customer";
 
   useEffect(() => {
     if (user?.name && user.name.length > 0) {
@@ -23,9 +28,8 @@ export default function NavbarProfileDropdown() {
     }
   }, [user]);
 
-  
-
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
+  const handleClick = (event: React.MouseEvent<HTMLElement>) =>
+    setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
 
   const goToProfile = () => {
@@ -35,17 +39,21 @@ export default function NavbarProfileDropdown() {
   const goToMyOrders = () => {
     handleClose();
     router.push("/my-orders");
-  }
+  };
+   const goToDashboard = () => {
+    handleClose();
+    router.push("/admin");
+  };
 
   const handleLogout = async () => {
     await dispatch(logoutUser()); // clear Redux + cookies
-    window.location.href = "/login";   // force full page reload
+    window.location.href = "/login"; // force full page reload
   };
 
   return (
     <>
       <IconButton onClick={handleClick} size="large">
-       <Avatar>{avatarLetter}</Avatar>
+        <Avatar>{avatarLetter}</Avatar>
       </IconButton>
 
       <Menu
@@ -55,8 +63,19 @@ export default function NavbarProfileDropdown() {
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}
       >
+         {/* COMMON */}
         <MenuItem onClick={goToProfile}>Profile</MenuItem>
-        <MenuItem onClick={goToMyOrders}>My Orders</MenuItem>
+
+        {/* CUSTOMER ONLY */}
+        {isCustomer && (
+          <MenuItem onClick={goToMyOrders}>My Orders</MenuItem>
+        )}
+
+        {/* ADMIN ONLY */}
+        {isAdmin && (
+          <MenuItem onClick={goToDashboard}>Dashboard</MenuItem>
+        )}
+
         <MenuItem onClick={handleLogout}>Logout</MenuItem>
       </Menu>
     </>

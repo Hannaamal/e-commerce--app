@@ -30,7 +30,7 @@ export default function NotAuthorizedPage() {
       <Button
         variant="contained"
         color="primary"
-        onClick={() => router.push("/")}
+        onClick={() => router.push("/admin")}
       >
         Go Home
       </Button>

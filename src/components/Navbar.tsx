@@ -21,7 +21,9 @@ export default function Navbar() {
   const pathname = usePathname();
 
   const loggedIn = isAuthenticated || !!token;
-
+  const role = user?.role;
+  const isAdmin = role === "admin";
+  const isCustomer = role === "customer";
   const { items: cartItems } = useSelector((state: RootState) => state.cart);
   const cartCount = cartItems?.length || 0;
   const { items: wishlistItems } = useSelector(
@@ -85,11 +87,11 @@ export default function Navbar() {
 
         <div className="flex items-center gap-4">
           <NavButton href="/" label="Home" pathname={pathname} />
-          <NavButton href="/products" label="Products" pathname={pathname} />
+          <NavButton href="/products/productclient" label="Products" pathname={pathname} />
           <NavButton href="/contact" label="Contact Us" pathname={pathname} />
 
-          {/* Cart + Wishlist */}
-          {loggedIn && (
+          {/* CUSTOMER ONLY: Cart + Wishlist */}
+          {loggedIn && isCustomer && (
             <>
               <Link href="/wishlist">
                 <IconButton
