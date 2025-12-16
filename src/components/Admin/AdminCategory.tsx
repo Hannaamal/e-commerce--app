@@ -31,6 +31,8 @@ export default function CategoryAdminPage() {
   const [openAdd, setOpenAdd] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
   const [newImage, setNewImage] = useState<File | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+
   const [editData, setEditData] = useState<Category>({
     _id: "",
     title: "",
@@ -79,35 +81,41 @@ export default function CategoryAdminPage() {
     );
     setOpenEdit(false);
   };
+  
 
   // Delete Category
   const handleDelete = async (id: string) => {
     await dispatch(deleteCategory(id));
   };
-
-  // Table Columns
   const columns: GridColDef[] = [
-    { field: "title", headerName: "Title", width: 200 },
+    {
+      field: "title",
+      headerName: "Title",
+      flex: 2, // takes 2 parts of available space
+      minWidth: 150, // won't shrink below this
+    },
     {
       field: "image",
       headerName: "Image",
-      width: 200,
+      flex: 1, // smaller than title
+      minWidth: 120,
       renderCell: (params) => (
         <img
-              src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/${params.row.image}`}
-              alt={params.row.title}
-              style={{
-                height: 120,
-                width: "100%",
-                objectFit: "cover",
-              }}
+          src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/${params.row.image}`}
+          alt={params.row.title}
+          style={{
+            height: 80,
+            width: "100%",
+            objectFit: "cover",
+          }}
         />
-        ),
+      ),
     },
     {
       field: "actions",
       headerName: "Actions",
-      width: 200,
+      flex: 1, // same as image
+      minWidth: 120,
       renderCell: (params) => (
         <Box>
           <IconButton color="primary" onClick={() => openEditModal(params.row)}>
@@ -125,19 +133,53 @@ export default function CategoryAdminPage() {
     },
   ];
 
+  const [page, setPage] = useState(0); // current page
+  const [pageSize, setPageSize] = useState(5); // rows per page
+  const totalCategories = categories.length; // or get from API if server-side
+
   return (
     <Box sx={{ p: 5 }}>
-      <h1 className="text-3xl font-bold mb-5">Category Management</h1>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 2,
+        }}
+      >
+        <h1 className="text-3xl font-bold">Category Management</h1>
+        <Button variant="contained" onClick={() => setOpenAdd(true)}>
+          ➕ Add Category
+        </Button>
+      </Box>
 
-      <Button variant="contained" onClick={() => setOpenAdd(true)}>
-        ➕ Add Category
-      </Button>
+      {/* Second line: Search box on right */}
+      <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 3 }}>
+        <input
+          type="text"
+          placeholder="Search..."
+          className="border border-gray-300 rounded px-2 py-1 w-48"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </Box>
 
       <Box sx={{ height: 500, mt: 3 }}>
         <DataGrid
           rows={categories}
           columns={columns}
           getRowId={(row) => row._id}
+          pagination
+          paginationMode="server" // server-side style
+          rowCount={totalCategories} // total rows count
+          paginationModel={{ page, pageSize }}
+          onPaginationModelChange={(model) => {
+            setPage(model.page);
+            setPageSize(model.pageSize);
+            // If fetching from API, dispatch fetchCategories({ page, pageSize }) here
+          }}
+          pageSizeOptions={[5, 10, 20]} // user can select rows per page
+          autoHeight
         />
       </Box>
 

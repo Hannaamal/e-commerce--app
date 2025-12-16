@@ -56,14 +56,23 @@ const profileSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(fetchProfile.fulfilled, (state, action: PayloadAction<Profile>) => {
-        state.user = action.payload;
+    .addCase(fetchProfile.fulfilled, (state, action: PayloadAction<Profile>) => {
+        state.user = {
+          ...action.payload,
+          image: action.payload.image || "uploads/default.png",
+        };
       })
       .addCase(updateProfile.fulfilled, (state, action: PayloadAction<Profile>) => {
-        state.user = action.payload;
+        state.user = {
+          ...action.payload,
+          image: action.payload.image || "uploads/default.png",
+        };
       })
       .addCase(updateProfileImage.fulfilled, (state, action: PayloadAction<Profile>) => {
-        state.user = action.payload;
+        state.user = {
+          ...action.payload,
+          image: action.payload.image || "uploads/default.png",
+        };
       });
   },
 });

@@ -9,6 +9,7 @@ export interface User {
   email: string;
   role: string;
   status: "Active" | "Inactive";
+   image?: string|File; // <-- add this line
 }
 
 interface UserState {

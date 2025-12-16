@@ -1,7 +1,7 @@
 "use client";
 
-import AdminNavbar from "@/components/AdminNavbar";
-import AdminCategory from "@/components/AdminCategory";
+import AdminNavbar from "@/components/Admin/AdminNavbar";
+import AdminCategory from "@/components/Admin/AdminCategory";
 
 export default function Page() {
   return (

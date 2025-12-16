@@ -1,6 +1,6 @@
 "use client";
 
-import AdminNavbar from "@/components/AdminNavbar";
+import AdminNavbar from "@/components/Admin/AdminNavbar";
 import ReportsPage from "@/components/Report";
 
 export default function Page() {

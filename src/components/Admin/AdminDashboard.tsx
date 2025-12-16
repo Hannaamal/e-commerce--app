@@ -9,7 +9,7 @@ import StatCard from "@/components/StatCard";
 import RevenueChart from "@/components/RevenueChart";
 import TopSellingProducts from "@/components/TopSellingProducts";
 import { PieChart } from "recharts";
-import DashboardPieChart from "./PiaChart";
+import DashboardPieChart from "../PiaChart";
 
 export default function AdminDashboard() {
   const [products] = useState<any[]>([]);

@@ -1,7 +1,7 @@
 "use client";
 
-import AdminNavbar from "@/components/AdminNavbar";
-import UserList from "@/components/UserList";
+import AdminNavbar from "@/components/Admin/AdminNavbar";
+import UserList from "@/components/Admin/UserList";
 
 export default function AdminUsersPage() {
   return (

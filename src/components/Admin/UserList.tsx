@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "@/redux/store";
+import { Avatar } from "@mui/material";
 import {
   fetchUsers,
   updateUser,
@@ -41,6 +42,22 @@ export default function UserList() {
 };
 
   const columns: GridColDef[] = [
+     {
+    field: "avatar",
+    headerName: "Avatar",
+    width: 100,
+    sortable: false,
+    renderCell: (params: GridRenderCellParams<User>) => (
+      <Avatar
+        src={
+          params.row.image
+            ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/${params.row.image}`
+            : `${process.env.NEXT_PUBLIC_BACKEND_URL}/uploads/default.png`
+        }
+        sx={{ width: 40, height: 40 }}
+      />
+    ),
+  },
     { field: "name", headerName: "Name", width: 200 },
     { field: "email", headerName: "Email", width: 250 },
     { field: "role", headerName: "Role", width: 150 },
@@ -72,13 +89,18 @@ export default function UserList() {
 
       <Box sx={{ height: 500, width: "100%" }}>
         <DataGrid
-          rows={users}
-          columns={columns}
-          pagination
-          pageSizeOptions={[5]}
-          loading={loading}
-          getRowId={(row) => row._id}
-        />
+    rows={users}
+    columns={columns}
+    pagination
+    pageSizeOptions={[5]}             // allowed options
+    paginationModel={{ page: 0, pageSize: 5 }} // initial page & size
+    onPaginationModelChange={(model) => {
+      // Update page & pageSize if needed
+      // You can store in state if you want server-side pagination
+    }}
+    loading={loading}
+    getRowId={(row) => row._id}
+  />
       </Box>
 
       {/* Edit User Dialog */}

@@ -1,7 +1,7 @@
 "use client";
 
-import AdminNavbar from "@/components/AdminNavbar";
-import AdminDashboard from "@/components/AdminDashboard";
+import AdminNavbar from "@/components/Admin/AdminNavbar";
+import AdminDashboard from "@/components/Admin/AdminDashboard";
 
 export default function AdminPage() {
   return (

@@ -1,5 +1,5 @@
-import AdminNavbar from "@/components/AdminNavbar";
-import AdminOrders from "@/components/AdminOrders";
+import AdminNavbar from "@/components/Admin/AdminNavbar";
+import AdminOrders from "@/components/Admin/AdminOrders";
 
 export default function Page() {
   return (

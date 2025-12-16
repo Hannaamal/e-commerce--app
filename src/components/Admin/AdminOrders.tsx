@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect,useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAllOrders, updateOrderStatus } from "@/redux/adminorderSlice";
 import type { AppDispatch, RootState } from "@/redux/store";
-import { Box, MenuItem, Select, Table, TableBody, TableCell, TableHead, TableRow, Typography, Paper } from "@mui/material";
+import { Box, MenuItem, Select, Table, TableBody, TableCell, TableHead, TableRow, Typography, Paper, TablePagination } from "@mui/material";
 
 export default function AdminOrders() {
   const dispatch = useDispatch<AppDispatch>();
@@ -18,13 +18,31 @@ export default function AdminOrders() {
     dispatch(updateOrderStatus({ orderId, status }));
   };
 
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+   const handleChangePage = (event: unknown, newPage: number) => {
+    setPage(newPage);
+  };
+   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+    const paginatedOrders = orders.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+    
   if (loading) return <p>Loading orders...</p>;
   if (error) return <p className="text-red-500">{error}</p>;
 
-  return (
-    <Box className="p-4">
-      <Typography variant="h4" mb={3}>All Orders</Typography>
+ return (
+  <Box className="p-4">
+    <Typography variant="h4" mb={3}>
+      All Orders
+    </Typography>
 
+    {loading ? (
+      <p>Loading orders...</p>
+    ) : error ? (
+      <p className="text-red-500">{error}</p>
+    ) : (
       <Paper>
         <Table>
           <TableHead>
@@ -37,7 +55,7 @@ export default function AdminOrders() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {orders.map(order => (
+            {paginatedOrders.map(order => (
               <TableRow key={order._id}>
                 <TableCell>{order.userId?.name} ({order.userId?.email})</TableCell>
                 <TableCell>₹{order.totalAmount}</TableCell>
@@ -57,7 +75,19 @@ export default function AdminOrders() {
             ))}
           </TableBody>
         </Table>
+
+        <TablePagination
+          component="div"
+          count={orders.length}
+          page={page}
+          onPageChange={handleChangePage}
+          rowsPerPage={rowsPerPage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          rowsPerPageOptions={[5, 10, 20]}
+        />
       </Paper>
-    </Box>
-  );
+    )}
+  </Box>
+);
+
 }
