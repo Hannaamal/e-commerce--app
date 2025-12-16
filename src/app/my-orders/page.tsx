@@ -27,7 +27,7 @@ export default function MyOrders() {
       {orders.map((order: any) => (
         <div key={order._id} className="border rounded-lg p-4 mb-4 shadow-sm">
           <div className="flex justify-between mb-2">
-            <span className="font-semibold">Order ID: {order._id}</span>
+           
             <span className="text-sm text-gray-600">
               {new Date(order.createdAt).toLocaleDateString()}
             </span>

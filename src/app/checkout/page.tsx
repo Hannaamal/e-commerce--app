@@ -6,10 +6,11 @@ import { RootState } from "@/redux/store";
 import { useRouter } from "next/navigation";
 import { createOrder } from "@/redux/orderSlice";
 import { clearCartAPI } from "@/redux/cartSlice";
+import { AppDispatch } from "@/redux/store";
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const { items: cartItems } = useSelector((state: RootState) => state.cart);
   const { user } = useSelector((state: RootState) => state.auth);
 
@@ -35,7 +36,7 @@ export default function CheckoutPage() {
 
     const orderPayload = {
       items: cartItems.map((item) => ({
-        productId: item._id,
+       productId: item.product_id,
         productName: item.product_name,
         price: item.price,
         quantity: item.quantity,

@@ -5,6 +5,7 @@ import Cookies from "js-cookie";
 
 // Cart item type
 interface CartItem {
+  cart_id: string;    
   product_id: string;
   product_name: string;
   image: string;

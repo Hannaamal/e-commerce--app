@@ -1,6 +1,6 @@
 import api from "@/lib/api";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
+
 
 interface Shipping {
   name: string;
@@ -39,7 +39,7 @@ const initialState: CheckoutState = {
 };
 
 // Async thunk to place order
-export const placeOrder = createAsyncThunk(
+export const createOrder = createAsyncThunk(
   "checkout/placeOrder",
   async (payload: { shipping: Shipping; cartItems: any[]; totalPrice: number }, { rejectWithValue }) => {
     try {
@@ -71,16 +71,16 @@ const checkoutSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(placeOrder.pending, (state) => {
+      .addCase(createOrder.pending, (state) => {
         state.loading = true;
         state.error = null;
         state.success = false;
       })
-      .addCase(placeOrder.fulfilled, (state) => {
+      .addCase(createOrder.fulfilled, (state) => {
         state.loading = false;
         state.success = true;
       })
-      .addCase(placeOrder.rejected, (state, action) => {
+      .addCase(createOrder.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

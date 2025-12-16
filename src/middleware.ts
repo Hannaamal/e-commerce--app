@@ -6,7 +6,8 @@ export const middleware = (req: NextRequest) => {
   const url = req.nextUrl.pathname;
 
   // ✅ PUBLIC ROUTES
-  const publicRoutes = ["/", "/products", "/contact", "/login", "/signup"];
+  const publicRoutes = ["/", "/products", "/contact", "/login", "/signup","/not-authorized", 
+  "/admin/not-authorized"];
 
   if (publicRoutes.includes(url) || url.startsWith("/products/")) {
     return NextResponse.next();
@@ -43,7 +44,7 @@ export const middleware = (req: NextRequest) => {
     }
 
     if (role !== "customer") {
-      return NextResponse.redirect(new URL("/login", req.url));
+      return NextResponse.redirect(new URL("/not-authorized", req.url));
     }
   }
 
