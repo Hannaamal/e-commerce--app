@@ -23,6 +23,8 @@ export default function ReportsPage() {
 
   // Use revenueData directly in your charts
   return (
+    <div>
+       <h1 className="text-3xl font-bold pb-10">Reports</h1>
     <ResponsiveContainer width="100%" height={300}>
       <BarChart data={revenueData}>
         <CartesianGrid strokeDasharray="3 3" />
@@ -34,5 +36,6 @@ export default function ReportsPage() {
         <Bar dataKey="totalOrders" fill="#82ca9d" name="Orders" />
       </BarChart>
     </ResponsiveContainer>
+    </div>
   );
 }

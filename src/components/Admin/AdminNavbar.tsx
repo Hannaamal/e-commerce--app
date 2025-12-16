@@ -23,6 +23,7 @@ import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import GroupIcon from "@mui/icons-material/Group";
 import LogoutIcon from "@mui/icons-material/Logout";
+import { usePathname } from "next/navigation";
 
 import Link from "next/link";
 import { useAuth } from "@/Context/AuthContext";
@@ -39,6 +40,7 @@ export default function AdminNavbar() {
   const closeMenu = () => {
     setMenuAnchor(null);
   };
+  const pathname = usePathname();
 
   const getInitials = (name: string | undefined) => {
     if (!name) return "A";
@@ -49,26 +51,23 @@ export default function AdminNavbar() {
       .toUpperCase();
   };
 
-
-
   const handleLogout = async () => {
-  // Clear HTTP cookies by overwriting them with empty values
-  document.cookie = "auth_token=; path=/; max-age=0;";
-  document.cookie = "role=; path=/; max-age=0;";
+    // Clear HTTP cookies by overwriting them with empty values
+    document.cookie = "auth_token=; path=/; max-age=0;";
+    document.cookie = "role=; path=/; max-age=0;";
 
-  // Redirect to home or login page
-  window.location.href = "/";
-};
+    // Redirect to home or login page
+    window.location.href = "/";
+  };
+  const [activeItem, setActiveItem] = useState<string | null>(null);
 
   const navItems = [
     { label: "Dashboard", icon: <DashboardIcon />, path: "/admin" },
     { label: "Products", icon: <ShoppingBagIcon />, path: "/admin/product" },
-    {label: "Category", icon: <GroupIcon />, path: "/admin/category" },
+    { label: "Category", icon: <GroupIcon />, path: "/admin/category" },
     { label: "Orders", icon: <GroupIcon />, path: "/admin/orders" },
     { label: "Reports", icon: <BarChartIcon />, path: "/admin/reports" },
     { label: "Users", icon: <GroupIcon />, path: "/admin/users" },
-    
-
   ];
 
   return (
@@ -119,18 +118,22 @@ export default function AdminNavbar() {
           </Typography>
         </Box>
 
-        <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={closeMenu}>
+        <Menu
+          anchorEl={menuAnchor}
+          open={Boolean(menuAnchor)}
+          onClose={closeMenu}
+        >
           {/* <MenuItem onClick={closeMenu}>Profile</MenuItem>
           <MenuItem onClick={closeMenu}>Settings </MenuItem> */}
           <Divider />
-         <MenuItem
-  onClick={() => {
-    closeMenu();
-    handleLogout();
-  }}
->
-  <LogoutIcon fontSize="small" sx={{ mr: 1 }} /> Logout
-</MenuItem>
+          <MenuItem
+            onClick={() => {
+              closeMenu();
+              handleLogout();
+            }}
+          >
+            <LogoutIcon fontSize="small" sx={{ mr: 1 }} /> Logout
+          </MenuItem>
         </Menu>
 
         <Divider sx={{ my: 2 }} />
@@ -141,9 +144,31 @@ export default function AdminNavbar() {
             <ListItem disablePadding key={item.label}>
               <Link
                 href={item.path}
-                style={{ width: "100%", textDecoration: "none", color: "inherit" }}
+                style={{
+                  width: "100%",
+                  textDecoration: "none",
+                  color: "inherit",
+                }}
               >
-                <ListItemButton sx={{ display: "flex", gap: 2 }}>
+                <ListItemButton
+                  selected={activeItem === item.path}
+                  onClick={() => setActiveItem(item.path)}
+                  sx={{
+                    display: "flex",
+                    gap: 2,
+                    borderRadius: 1,
+                    mx: 1,
+                    mb: 0.5,
+
+                    "&.Mui-selected": {
+                      backgroundColor: "black",
+                      color: "white",
+                    },
+                    "&.Mui-selected:hover": {
+                      backgroundColor: "black",
+                    },
+                  }}
+                >
                   {item.icon}
                   <ListItemText primary={item.label} />
                 </ListItemButton>
@@ -186,9 +211,31 @@ export default function AdminNavbar() {
             <ListItem disablePadding key={item.label}>
               <Link
                 href={item.path}
-                style={{ width: "100%", textDecoration: "none", color: "inherit" }}
+                style={{
+                  width: "100%",
+                  textDecoration: "none",
+                  color: "inherit",
+                }}
               >
-                <ListItemButton sx={{ display: "flex", gap: 2 }}>
+                <ListItemButton
+                  selected={activeItem === item.path}
+                  onClick={() => setActiveItem(item.path)}
+                  sx={{
+                    display: "flex",
+                    gap: 2,
+                    borderRadius: 1,
+                    mx: 1,
+                    mb: 0.5,
+
+                    "&.Mui-selected": {
+                      backgroundColor: "black",
+                      color: "white",
+                    },
+                    "&.Mui-selected:hover": {
+                      backgroundColor: "black",
+                    },
+                  }}
+                >
                   {item.icon}
                   <ListItemText primary={item.label} />
                 </ListItemButton>

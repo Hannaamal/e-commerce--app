@@ -17,6 +17,9 @@ export default function UserList() {
 
   const [editOpen, setEditOpen] = useState(false);
   const [editUser, setEditUser] = useState<User | null>(null);
+   const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(5);
+
 
   useEffect(() => {
     dispatch(fetchUsers());
@@ -89,18 +92,19 @@ export default function UserList() {
 
       <Box sx={{ height: 500, width: "100%" }}>
         <DataGrid
-    rows={users}
-    columns={columns}
-    pagination
-    pageSizeOptions={[5]}             // allowed options
-    paginationModel={{ page: 0, pageSize: 5 }} // initial page & size
-    onPaginationModelChange={(model) => {
-      // Update page & pageSize if needed
-      // You can store in state if you want server-side pagination
-    }}
-    loading={loading}
-    getRowId={(row) => row._id}
-  />
+          rows={users}
+          columns={columns}
+          getRowId={(row) => row._id}
+          pagination
+          paginationMode="client"  // Client-side pagination
+          pageSizeOptions={[5, 10, 20]}
+          paginationModel={{ page, pageSize }}
+          onPaginationModelChange={(model) => {
+            setPage(model.page);
+            setPageSize(model.pageSize);
+          }}
+          loading={loading}
+        />
       </Box>
 
       {/* Edit User Dialog */}

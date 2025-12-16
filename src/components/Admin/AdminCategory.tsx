@@ -38,6 +38,9 @@ export default function CategoryAdminPage() {
     title: "",
     image: "",
   });
+  const filteredCategories = categories.filter((cat) =>
+    cat.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const [form, setForm] = useState({
     title: "",
@@ -81,7 +84,6 @@ export default function CategoryAdminPage() {
     );
     setOpenEdit(false);
   };
-  
 
   // Delete Category
   const handleDelete = async (id: string) => {
@@ -166,19 +168,18 @@ export default function CategoryAdminPage() {
 
       <Box sx={{ height: 500, mt: 3 }}>
         <DataGrid
-          rows={categories}
+          rows={filteredCategories} // use filtered array
           columns={columns}
           getRowId={(row) => row._id}
           pagination
-          paginationMode="server" // server-side style
-          rowCount={totalCategories} // total rows count
+          paginationMode="client" // client-side pagination
+          rowCount={filteredCategories.length}
           paginationModel={{ page, pageSize }}
           onPaginationModelChange={(model) => {
             setPage(model.page);
             setPageSize(model.pageSize);
-            // If fetching from API, dispatch fetchCategories({ page, pageSize }) here
           }}
-          pageSizeOptions={[5, 10, 20]} // user can select rows per page
+          pageSizeOptions={[5, 10, 20]}
           autoHeight
         />
       </Box>

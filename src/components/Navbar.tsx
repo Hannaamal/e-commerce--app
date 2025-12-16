@@ -9,7 +9,7 @@ import { AppDispatch, RootState } from "@/redux/store";
 import { fetchCartItems } from "@/redux/cartSlice";
 import NavbarProfileDropdown from "./NavbarProfileDropdown";
 import { useEffect, useState } from "react";
-
+import { usePathname } from "next/navigation";
 import { useAuth } from "@/Context/AuthContext"; // ✅ using auth context
 import { fetchWishlist } from "@/redux/wishlistSlice";
 
@@ -18,6 +18,7 @@ export default function Navbar() {
 
   // 👇 useAuth for login detection
   const { user, token, isAuthenticated } = useAuth();
+  const pathname = usePathname();
 
   const loggedIn = isAuthenticated || !!token;
 
@@ -41,6 +42,34 @@ export default function Navbar() {
       await dispatch(fetchCartItems());
     }
   };
+  const NavButton = ({
+    href,
+    label,
+    pathname,
+  }: {
+    href: string;
+    label: string;
+    pathname: string;
+  }) => {
+    const isActive = pathname === href || pathname.startsWith(href + "/");
+
+    return (
+      <Button
+        component={Link}
+        href={href}
+        sx={{
+          backgroundColor: isActive ? "black" : "transparent",
+          color: isActive ? "white" : "gray",
+          fontWeight: isActive ? "bold" : "normal",
+          "&:hover": {
+            backgroundColor: isActive ? "black" : "#f5f5f5",
+          },
+        }}
+      >
+        {label}
+      </Button>
+    );
+  };
 
   return (
     <AppBar
@@ -55,21 +84,21 @@ export default function Navbar() {
         </Link>
 
         <div className="flex items-center gap-4">
-          <Button color="inherit" component={Link} href="/">
-            Home
-          </Button>
-          <Button color="inherit" component={Link} href="/products">
-            Products
-          </Button>
-          <Button color="inherit" component={Link} href="/contact">
-            Contact Us
-          </Button>
+          <NavButton href="/" label="Home" pathname={pathname} />
+          <NavButton href="/products" label="Products" pathname={pathname} />
+          <NavButton href="/contact" label="Contact Us" pathname={pathname} />
 
-          {/* Show Cart + Wishlist only when logged in */}
+          {/* Cart + Wishlist */}
           {loggedIn && (
             <>
               <Link href="/wishlist">
-                <IconButton color="inherit">
+                <IconButton
+                  sx={{
+                    color: pathname === "/wishlist" ? "black" : "gray",
+                    backgroundColor:
+                      pathname === "/wishlist" ? "#847070ff" : "transparent",
+                  }}
+                >
                   <Badge badgeContent={wishlistCount} color="error">
                     <FavoriteIcon />
                   </Badge>
@@ -77,7 +106,14 @@ export default function Navbar() {
               </Link>
 
               <Link href="/cart">
-                <IconButton color="inherit" onClick={handleCartOpen}>
+                <IconButton
+                  onClick={handleCartOpen}
+                  sx={{
+                    color: pathname === "/cart" ? "black" : "gray",
+                    backgroundColor:
+                      pathname === "/cart" ? "#816e6eff" : "transparent",
+                  }}
+                >
                   <Badge badgeContent={cartCount} color="error">
                     <ShoppingCartIcon />
                   </Badge>
@@ -86,7 +122,6 @@ export default function Navbar() {
             </>
           )}
 
-          {/* Profile Dropdown or Login */}
           {loggedIn ? (
             <NavbarProfileDropdown />
           ) : (
