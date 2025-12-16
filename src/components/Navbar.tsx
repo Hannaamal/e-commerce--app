@@ -87,7 +87,7 @@ export default function Navbar() {
 
         <div className="flex items-center gap-4">
           <NavButton href="/" label="Home" pathname={pathname} />
-          <NavButton href="/products/productclient" label="Products" pathname={pathname} />
+          <NavButton href="/products" label="Products" pathname={pathname} />
           <NavButton href="/contact" label="Contact Us" pathname={pathname} />
 
           {/* CUSTOMER ONLY: Cart + Wishlist */}

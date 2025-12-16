@@ -19,47 +19,55 @@ import Link from "next/link";
 import { fetchCategories } from "@/redux/categorySlice";
 import Categories from "@/components/Categories";
 
-export default function ProductsPage() {
+type Props = {
+  searchParams: {
+    category?: string;
+  };
+};
+
+export default function ProductsPage({ searchParams }: Props) {
   const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter();
+
+  /* ✅ READ CATEGORY SAFELY */
+  const categoryFromUrl = searchParams?.category;
+
   const products = useSelector(
     (state: RootState) => state.products.products || []
   );
 
-  const [page, setPage] = useState(1); // current page
-  const limit = 6; // products per page
   const selectedCategory = useSelector(
     (state: RootState) => state.products.selectedCategory
   );
-  const categories = useSelector((state: RootState) => state.categories.list);
 
-  const searchParams = useSearchParams();
-  const categoryFromUrl = searchParams.get("category");
-  const router = useRouter();
+  const categories = useSelector(
+    (state: RootState) => state.categories.list
+  );
 
+  const [page, setPage] = useState(1);
+  const limit = 6;
+
+  /* ✅ SYNC URL → REDUX */
   useEffect(() => {
     if (categoryFromUrl) {
       dispatch(setSelectedCategory(categoryFromUrl));
     }
   }, [categoryFromUrl, dispatch]);
 
-  // Fetch products from Redux
   useEffect(() => {
     dispatch(fetchCategories());
   }, [dispatch]);
 
-  // Fetch products whenever category changes
   useEffect(() => {
     setPage(1);
     dispatch(listProducts(selectedCategory));
   }, [dispatch, selectedCategory]);
 
-  // Pagination AFTER filtering
-  const total = products.length;
-  const totalPages = Math.ceil(total / limit);
-  const start = (page - 1) * limit;
-  const end = start + limit;
-
-  const paginatedProducts = products.slice(start, end);
+  const totalPages = Math.ceil(products.length / limit);
+  const paginatedProducts = products.slice(
+    (page - 1) * limit,
+    page * limit
+  );
   return (
     <Container
       className="py-16"
