@@ -3,12 +3,16 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchRevenueData } from "@/redux/adminreportSlice";
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { RootState } from "@/redux/store";
 
 import type { AppDispatch } from "@/redux/store";
 
 export default function ReportsPage() {
   const dispatch = useDispatch<AppDispatch>();
-  const { revenueData, loading } = useSelector((state) => state.reports);
+  // const { revenueData, loading } = useSelector((state) => state.reports);
+  const { revenueData, loading } = useSelector(
+  (state: RootState) => state.reports
+);
 
 
   useEffect(() => {

@@ -39,7 +39,6 @@ export default function AdminOrders() {
           <TableBody>
             {orders.map(order => (
               <TableRow key={order._id}>
-                <TableCell>{order._id}</TableCell>
                 <TableCell>{order.userId?.name} ({order.userId?.email})</TableCell>
                 <TableCell>₹{order.totalAmount}</TableCell>
                 <TableCell>

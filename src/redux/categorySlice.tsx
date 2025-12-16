@@ -47,7 +47,16 @@ export const addCategory = createAsyncThunk(
 );
 
 // Update
-export const updateCategory = createAsyncThunk(
+export const updateCategory = createAsyncThunk<
+  any,
+  {
+    id: string;
+    data: {
+      title: string;
+      image: File | null;
+    };
+  }
+>(
   "categories/update",
   async ({ id, data }) => {
     const token = getAuthToken();

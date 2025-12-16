@@ -16,9 +16,9 @@ export const fetchRevenueData = createAsyncThunk(
       const data = await res.json();
       if (!data.status) throw new Error(data.message);
       return data.data;
-    } catch (err) {
-      return rejectWithValue(err.message);
-    }
+    } catch (err: any) {
+  return rejectWithValue(err?.message || "Failed to fetch report");
+}
   }
 );
 
@@ -27,7 +27,7 @@ const reportsSlice = createSlice({
   initialState: {
     revenueData: [],
     loading: false,
-    error: null,
+    error: null as string | null,
   },
   reducers: {},
   extraReducers: (builder) => {
@@ -42,7 +42,7 @@ const reportsSlice = createSlice({
       })
       .addCase(fetchRevenueData.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
+       state.error = (action.payload as string) || "Failed to fetch report";
       });
   },
 });

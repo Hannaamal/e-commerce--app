@@ -4,13 +4,37 @@ import api from "@/lib/api";
 import Cookies from "js-cookie";
 
 
+type CreateOrderPayload = {
+  items: {
+    productId: string;
+    productName: string;
+    price: number;
+    quantity: number;
+    image: string;
+  }[];
+  address: {
+    fullName: string;
+    phone: string;
+    house: string;
+    street: string;
+    city: string;
+    state: string;
+    pincode: string;
+    paymentMethod: string;
+  };
+  paymentMethod: string;
+  totalAmount: number;
+};
 
 
 
 
 const getAuthToken = () => Cookies.get("auth_token") || Cookies.get("token");
 
-export const createOrder = createAsyncThunk(
+export const createOrder = createAsyncThunk<
+  any,
+  CreateOrderPayload
+>(
   "order/create",
   async (orderData, { rejectWithValue }) => {
     try {
@@ -29,7 +53,10 @@ export const createOrder = createAsyncThunk(
   }
 );
 
-export const fetchMyOrders = createAsyncThunk(
+export const fetchMyOrders = createAsyncThunk<
+  any,
+  void
+>(
   "orders/fetchMyOrders",
   async (_, { rejectWithValue }) => {
     try {
@@ -51,13 +78,13 @@ export const fetchMyOrders = createAsyncThunk(
 );
 const orderSlice = createSlice({
   name: "order",
-  initialState: { loading: false, order: null, error: null, success: false },
+  initialState: { loading: false, order: null, error: null as string | null, success: false },
   reducers: {
     clearOrderState: (state) => ({
       ...state,
       loading: false,
       orders: [] as any[],
-      error: null,
+       
       success: false,
     }),
   },
@@ -75,7 +102,7 @@ const orderSlice = createSlice({
       })
       .addCase(createOrder.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
+        state.error = action.payload as string;
         state.success = false;
       })
 
@@ -85,11 +112,11 @@ const orderSlice = createSlice({
       })
       .addCase(fetchMyOrders.fulfilled, (state, action) => {
         state.loading = false;
-        state.orders = action.payload; // you might want to rename 'order' to 'orders' array
+        state.order = action.payload; // you might want to rename 'order' to 'orders' array
       })
       .addCase(fetchMyOrders.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
+         state.error = action.payload as string;
       });
   },
 });
