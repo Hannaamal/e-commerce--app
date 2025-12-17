@@ -25,12 +25,14 @@ type Props = {
   };
 };
 
-export default function ProductsPage({ searchParams }: Props) {
+export default function ProductsPage() {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
+   const searchParams = useSearchParams();
 
   /* ✅ READ CATEGORY SAFELY */
-  const categoryFromUrl = searchParams?.category;
+//   const categoryFromUrl = searchParams?.category;
+  const categoryFromUrl = searchParams.get("category");
 
   const products = useSelector(
     (state: RootState) => state.products.products || []
@@ -48,11 +50,16 @@ export default function ProductsPage({ searchParams }: Props) {
   const limit = 6;
 
   /* ✅ SYNC URL → REDUX */
-  useEffect(() => {
-    if (categoryFromUrl) {
-      dispatch(setSelectedCategory(categoryFromUrl));
-    }
+//   useEffect(() => {
+//     if (categoryFromUrl) {
+//       dispatch(setSelectedCategory(categoryFromUrl));
+//     }
+//   }, [categoryFromUrl, dispatch]);
+
+   useEffect(() => {
+    dispatch(setSelectedCategory(categoryFromUrl || null));
   }, [categoryFromUrl, dispatch]);
+
 
   useEffect(() => {
     dispatch(fetchCategories());

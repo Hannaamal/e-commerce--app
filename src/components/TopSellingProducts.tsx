@@ -52,7 +52,7 @@ export default function TopSellingProducts({
                       p.image
                         ? p.image.startsWith("http")
                           ? p.image
-                          : `http://localhost:5000/${p.image}` // prepend backend URL
+                          : `${process.env.NEXT_PUBLIC_BACKEND_URL}/${p.image}` // prepend backend URL
                         : "" // fallback if no image
                     }
                     alt={p.product_name}

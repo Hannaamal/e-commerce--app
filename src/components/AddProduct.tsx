@@ -107,7 +107,7 @@ export default function ProductsPage() {
   }, [dispatch, page, pageSize, appliedFilters]);
   const handleView = async (id: string) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/product/${id}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/product/${id}`);
       const data = await res.json();
 
       console.log("VIEW DATA:", data);
@@ -124,7 +124,7 @@ export default function ProductsPage() {
   const [categories, setCategories] = useState<any[]>([]);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/category/list")
+    fetch("${process.env.NEXT_PUBLIC_BACKEND_URL}/api/category/list")
       .then((res) => res.json())
       .then((data) => {
         console.log("CATEGORY API RESPONSE", data); // <-- tell me this output
@@ -298,7 +298,7 @@ export default function ProductsPage() {
             onClick={async () => {
               // Fetch full product from backend
               const res = await fetch(
-                `http://localhost:5000/api/product/${params.row.id}`
+                `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/product/${params.row.id}`
               );
               const data = await res.json();
               setEditingProduct(data.data || data); // now it has all fields
@@ -570,7 +570,7 @@ export default function ProductsPage() {
                   src={
                     editingProduct.image.startsWith("http")
                       ? editingProduct.image
-                      : `http://localhost:5000/${editingProduct.image}`
+                      : `${process.env.NEXT_PUBLIC_BACKEND_URL}/${editingProduct.image}`
                   }
                   alt="Current Product"
                   style={{
@@ -645,7 +645,7 @@ export default function ProductsPage() {
                     src={
                       viewProduct.image?.startsWith("http")
                         ? viewProduct.image
-                        : `http://localhost:5000/${viewProduct.image}`
+                        : `${process.env.NEXT_PUBLIC_BACKEND_URL}/${viewProduct.image}`
                     }
                     alt="Product"
                     style={{

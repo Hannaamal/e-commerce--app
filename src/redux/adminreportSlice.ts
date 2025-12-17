@@ -7,7 +7,7 @@ export const fetchRevenueData = createAsyncThunk(
   "reports/fetchRevenueData",
   async (_, { rejectWithValue }) => {
     try {
-      const res = await fetch("http://localhost:5000/api/report/revenue-over-time", {
+      const res = await fetch("${process.env.NEXT_PUBLIC_BACKEND_URL}/api/report/revenue-over-time", {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${Cookies.get("auth_token")}`, // if using JWT

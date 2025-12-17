@@ -46,7 +46,7 @@ export default function MyOrders() {
           {order.items.map((item: any, index: number) => (
             <div key={index} className="flex gap-4 mb-2">
               <img
-                src={`http://localhost:5000/${item.image}`} // adjust your base URL
+                src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/${item.image}`} // adjust your base URL
                 alt={item.productName}
                 className="w-16 h-16 object-cover rounded"
               />

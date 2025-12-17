@@ -43,7 +43,7 @@ export const createOrder = createAsyncThunk(
   "checkout/placeOrder",
   async (payload: { shipping: Shipping; cartItems: any[]; totalPrice: number }, { rejectWithValue }) => {
     try {
-      const res = await api.post("http://localhost:5000/api/orders", payload);
+      const res = await api.post("${process.env.NEXT_PUBLIC_BACKEND_URL}/api/orders", payload);
       return res.data;
     } catch (err: any) {
       return rejectWithValue(err.response?.data?.error || "Failed to place order");
